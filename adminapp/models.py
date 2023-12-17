@@ -350,6 +350,9 @@ class Coupon(models.Model):
     active = models.BooleanField(default=True)
     users = models.ManyToManyField(CustomUser, related_name="coupons")
 
+    def if_active(self):
+        return self.active
+
     def is_active(self):
         return self.valid_from <= timezone.now() <= self.valid_to
 

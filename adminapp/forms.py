@@ -70,9 +70,9 @@ class ProductVariantForm(forms.ModelForm):
     quantity = forms.ModelChoiceField(
         queryset=Quantity.objects.all(),
         to_field_name="name",
-        required=False,
+        required=True,
     )
-    new_quantity = forms.CharField(max_length=50, required=False)
+    new_quantity = forms.CharField(max_length=50, required=True)
 
     def clean(self):
         cleaned_data = super().clean()

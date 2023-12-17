@@ -833,6 +833,7 @@ def checkout(request):
                     coupon = Coupon.objects.get(hashed_code=coupon_code_value)
                     if (
                         coupon.is_active()
+                        and coupon.if_active()
                         and not coupon.is_expired()
                         and request.user not in coupon.users.all()
                     ):
