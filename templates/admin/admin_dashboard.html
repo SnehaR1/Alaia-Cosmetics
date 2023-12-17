@@ -1,0 +1,218 @@
+{% extends 'admin/admin_base.html'%}
+{% load static %}
+{% block title %}Admin | Dashboard{% endblock %}
+{% block content %}
+
+
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == "success" %}
+<div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  {{message}}
+</div>
+{% else %}
+<div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+  <strong>Error! </strong>{{message}}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+  
+    <div class="my-5 grid grid-cols-2 md:grid-cols-3 gap-4 ml-72">
+
+      <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+          <div class="flex"><h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Sales</h5></div>
+          <p class="font-normal text-gray-700 dark:text-gray-400">₹{{total_revenue}}</p>
+      </a>
+      <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+        <div class="flex"><h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Sold Products</h5></div>
+        <p class="font-normal text-gray-700 dark:text-gray-400">{{total_products_sold}}</p>
+    </a>
+
+    <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+      <div class="flex"><h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Active Customers</h5></div>
+      <p class="font-normal text-gray-700 dark:text-gray-400">{{total_customers}}</p>
+  </a>
+    </div>
+  
+
+
+
+
+<div>
+<form method="post" action="{% url 'admin_dashboard' %}" class="ml-72">
+  {% csrf_token %}
+  <label for="filter">Filter by:</label>
+  <select id="filter" name="filter" onchange="this.form.submit()">
+      <option value="weekly" {% if filter_type == 'weekly' %}selected{% endif %}>Weekly</option>
+      <option value="monthly" {% if filter_type == 'monthly' %}selected{% endif %}>Monthly</option>
+      <option value="yearly" {% if filter_type == 'yearly' %}selected{% endif %}>Yearly</option>
+  </select>
+</form>
+
+<div class="ml-72" >
+  <canvas id="myChart" width="100" height="25"></canvas>
+</div>
+
+</div>
+{% comment %} <div class="ml-72">
+  <canvas id="pieChart" class="w-32 h-32" ></canvas>
+</div> {% endcomment %}
+  {% comment %} <div class="ml-72" width="5" height="15">
+    <canvas id="pieChart" ></canvas>
+
+  </div> {% endcomment %}
+
+
+
+  <table class="w-3/4 ml-72  mt-12 text-sm text-left text-gray-500 dark:text-gray-400">
+    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+            <th scope="col" class="px-6 py-3">
+                Product name
+            </th>
+            <th scope="col" class="px-6 py-3">
+                Sales
+            </th>
+            <th scope="col" class="px-6 py-3">
+                Unit Price
+            </th>
+            <th scope="col" class="px-6 py-3">
+                Amount
+            </th>
+            <th scope="col" class="px-6 py-3">
+                Status
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in product_orders %}
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td class="px-6 py-4">
+                {{ item.product_title }}
+            </td>
+          
+            <td class="px-6 py-4">
+                {{ item.count }}
+            </td>
+        
+            <td class="px-6 py-4">
+              {{item.price}}
+            </td>
+            <td class="px-6 py-4">
+           {{item.amount}}
+               
+            </td>
+            <td class="flex px-6 py-4">
+                {%if item.status %}<span class="text-green-500">In stock</span>{%else%}<span class="text-red-500">Out of stock</span>{%endif%}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+  
+
+</div>
+
+<div class="flex ml-72 mt-12 mb-12" >
+
+    <a href="{% url 'report' %}?pdf=true" name="pdf">
+  <button type="button" name="pdf" class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white ml-72">Generate PDF</button><a>
+    <a href="{% url 'report' %}?excel=true" name="excel"> <button type="button" name="excel" class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white ml-32">Download Excel Sheet</button></a>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+<script>
+  const ctx = document.getElementById('myChart');
+
+  const commonOptions = {
+    type: 'bar',
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  };
+
+  {% if filter_type == 'monthly' %}
+  new Chart(ctx, {
+    ...commonOptions,
+    data: {
+      labels: {{ month_labels|safe }},
+      datasets: [{
+        label:'Orders',
+        data: {{ total_monthly_orders|safe }},
+        borderWidth: 1
+      }]
+    }
+  });
+  {% elif filter_type == 'weekly' %}
+  new Chart(ctx, {
+    ...commonOptions,
+    data: {
+      labels: {{ week_labels|safe }},
+      datasets: [{
+        label: 'Orders',
+        data: {{ total_weekly_orders|safe }},
+        borderWidth: 1
+      }]
+    }
+  });
+  {% else %}
+  new Chart(ctx, {
+    ...commonOptions,
+    data: {
+      labels: {{ year_labels|safe }},
+      datasets: [{
+        label: 'Orders',
+        data: {{ total_yearly_orders|safe }},
+        borderWidth: 1
+      }]
+    }
+  });
+  {% endif %}
+</script>
+
+ {% comment %} <script>
+  const pictx = document.getElementById('pieChart');
+
+  new Chart(pictx, {
+    type: 'pie',
+    data: {
+      labels: {{product_labels|safe}},
+      datasets: [{
+        label: '# of Votes',
+        data: {{count|safe}},
+        borderWidth: 1
+      }]
+    },
+    options: {
+  
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>  {% endcomment %}
+
+{% endblock %}

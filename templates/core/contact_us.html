@@ -1,0 +1,45 @@
+{% extends 'core/core_base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == "success" %}
+<div class="mx-auto w-3/4 ml-72 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  {{message}}
+</div>
+{% else %}
+<div class="mx-auto w-3/4 ml-72 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+  <strong>Error! </strong>{{message}}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+<section class="bg-white dark:bg-gray-900">
+    <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
+        <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white">Contact Us</h2>
+        <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-400 sm:text-xl">"Got beauty questions, feedback on our features, or inquiries about our Business plan? We're here for you – let us know how we can enhance your cosmetic experience!"</p>
+        <form method="post" action="{% url 'contact_us' %}" class="space-y-8">
+            {% csrf_token %}
+            <div>
+                <label for="{{ form.mail.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Your email</label>
+                {% render_field form.mail class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light" placeholder="name@abc.com" %}
+      
+            </div>
+            <div>
+                
+                <label for="{{ form.subject.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Subject</label>
+                {% render_field form.subject class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light" placeholder="Let us know how we can help you"  %}
+
+            </div>
+            <div class="sm:col-span-2">
+                <label for="{{ form.message.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Your message</label>
+                {% render_field form.message class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg shadow-sm border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Leave a comment..."  %}
+               
+            </div>
+            <button type="submit" name="contact_us" class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white">Send message</button>
+           
+        </form>
+    </div>
+  </section>
+{% endblock %}

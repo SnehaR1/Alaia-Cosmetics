@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Sales Report</title>
+</head>
+<body>
+
+ 
+<div class="flex row">
+
+  <div class="flex"><h5>Total Sales</h5></div>
+  <p>RS {{total_revenue}}</p>
+
+
+
+  <div class="flex"><h5>Sold Products</h5></div>
+  <p>{{total_products_sold}}</p>
+
+
+
+  <div class="flex"><h5>Active Customers</h5></div>
+  <p>{{total_customers}}</p>
+
+</div>
+
+
+<table>
+<thead>
+  <tr>
+    <th>Product name</th>
+    <th>Sales</th>
+    <th>Unit Price</th>
+    <th>Amount</th>
+    <th>Status</th>
+  </tr>
+</thead>
+<tbody>
+  {% for item in product_orders %}
+  <tr>
+    <td>{{ item.product_title }}</td>
+    <td>{{ item.count }}</td>
+    <td>Rs {{ item.price }}</td>
+    <td>Rs {{ item.amount }}</td>
+    <td class="{% if item.status %}status-in-stock{% else %}status-out-of-stock{% endif %}">
+      {% if item.status %}In stock{% else %}Out of stock{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
+</div>
+
+
+</body>
+</html>
+
+
+
+
+

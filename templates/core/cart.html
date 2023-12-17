@@ -1,0 +1,229 @@
+{% extends 'core/core_base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Alaia | Cart{% endblock %}
+{% block content %}
+<div class="bg-gray-100 h-screen py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-2xl font-semibold mb-4">Shopping Cart</h1>
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="md:w-3/4">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left font-semibold">Product</th>
+                                <th class="text-left font-semibold">Price</th>
+                                <th class="text-left font-semibold">Quantity</th>
+                                <th class="text-left font-semibold">Total</th>
+                                <th class="text-left font-semibold">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_order.cartorderitems_set.all %}
+                            <tr>
+                                <td class="py-4">
+                                    <div class="flex items-center">
+                                        {% if item.price.image %}
+                                        <img class="h-16 w-16 mr-4" src="{{ item.price.image.url }}" alt="Product image">
+                                        {% endif %}
+                                        <span class="font-semibold"> {{ item.price.product.title }}-{{item.price.color}}-{{item.price.quantity}}</span>
+                                    </div>
+                                </td>
+                                
+                                {% if product_offer%}
+                                <td class="py-4">₹{{ product_offer.price }}</td>
+                                {%elif category_offer%}
+                                <td class="py-4">₹{{ category_offer.price }}</td>
+                                {%else%}
+                                <td class="py-4">₹{{ item.price.old_price }}</td>
+                                {%endif%}
+                                <td class="py-4">
+                                    <div class="flex items-center">
+                                        <form id="item_form_{{ item.id }}" data-item-id="{{ item.id }}" class="item-form">
+                                            {% csrf_token %}
+                                            <button class="border rounded-md py-2 px-4 mr-2 change-quantity decrement"
+        data-action="decrease" data-url="{% url 'decrease_quantity' item.id %}" data-item-id="{{ item.id }}">-</button>
+<span class="text-center w-8 quantity-display" data-item-id="{{ item.id }}">{{ item.quantity }}</span>
+<button class="border rounded-md py-2 px-4 ml-2 change-quantity increment"
+        data-action="increase" data-url="{% url 'increase_quantity' item.id %}" data-item-id="{{ item.id }}">+</button>
+                                        </form>
+                                    </div>
+                                    
+                                </td>
+                                <td class="py-4 item-total" data-item-id="{{ item.id }}">
+            
+                                    <span class="total-display" data-item-id="{{ item.id }}">₹{{ item.calculate_total }}</span>
+                                </td>
+                                
+
+
+                            </td>
+                            <td class="py-4 "><a href="{% url 'dlt_cart' item.id %}"> <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg></a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="md:w-1/4">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-lg font-semibold mb-4">Summary</h2>
+                    <div class="flex justify-between mb-2">
+                        <span>Subtotal</span>
+                        <span class="overall-total-display">₹{{ overall_total }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>Taxes</span>
+                        <span>₹0.00</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>Shipping</span>
+                        <span>₹0.00</span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="flex justify-between mb-2">
+                        <span class="font-semibold">Total</span>
+                        <span class="font-semibold overall-total-display">₹{{ overall_total }}</span>
+                    </div>
+                    <button class="bg-blue-500 text-white py-2 px-4 rounded-lg mt-4 w-full"><a href="{% url 'checkout' %}">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+ {% comment %} <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Attach click event listeners to quantity change buttons
+        const quantityButtons = document.querySelectorAll('.change-quantity');
+        quantityButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const action = button.getAttribute('data-action');
+                const url = button.getAttribute('data-url');
+                console.log('Button clicked!', action, url); // Add this line
+                updateQuantity(url, action);
+            });
+        });
+       
+    
+        // Function to update quantity using Ajax
+        function updateQuantity(url, action) {
+            const formData = new FormData();
+            formData.append('action', action);
+        
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update the displayed quantity on success
+                const itemForm = document.querySelector(`[data-url="${url}"]`);
+                const quantityDisplay = itemForm.querySelector('.quantity-display');
+                quantityDisplay.textContent = data.quantity;
+                
+                // Trigger a custom event to notify other parts of the page about the update
+                const updateEvent = new Event('quantityUpdated');
+                document.dispatchEvent(updateEvent);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error updating quantity:', error);
+            });
+        }
+        
+    
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    });
+    </script>  {% endcomment %}
+    
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- Your script goes here -->
+    {% comment %} <script>
+        $(document).ready(function() {
+            $('.change-quantity').on('click', function(event) {
+                event.preventDefault();
+    
+                var $button = $(this);
+                var itemId = $button.data('item-id');
+                var url = $button.data('url');
+    
+                console.log('Button clicked! Item ID:', itemId, 'URL:', url);
+    
+                // AJAX request without timestamp
+                $.get(url, function(response) {
+                    console.log('AJAX Response:', response);
+                
+                    // Update the quantity display on the page
+                    $('[data-item-id="' + itemId + '"] .quantity-display').text(response.quantity);
+                
+                    // Log the total value
+                    console.log('Total:', response.total);
+                
+                    // Update the total display on the page
+                    $('[data-item-id="' + itemId + '"] .total-display').text('₹' + response.total);
+                    $('[data-item-id="' + itemId + '"] .total-display').text('₹' + response.total);
+                
+                    console.log('After updating total display');
+                });
+                
+            });
+        });
+    </script> {% endcomment %}
+    
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('.change-quantity').on('click', function(event) {
+                event.preventDefault();
+    
+                var $button = $(this);
+                var itemId = $button.data('item-id');
+                var url = $button.data('url');
+    
+                console.log('Button clicked! Item ID:', itemId, 'URL:', url);
+    
+                $.get(url, function(response) {
+                    console.log('AJAX Response:', response);
+    
+                    if ('quantity' in response) {
+                        $('[data-item-id="' + itemId + '"] .quantity-display').text(response.quantity);
+                        console.log('Quantity updated successfully');
+                    } else {
+                        console.error('Error updating quantity:', response);
+                    }
+    
+                    if ('total' in response) {
+                        $('[data-item-id="' + itemId + '"] .total-display').text('₹' + response.total);
+                        console.log('Total updated successfully');
+                    } else {
+                        console.error('Error updating total:', response);
+                    }
+    
+                    if ('overall_total' in response) {
+                        $('.overall-total-display').text('₹' + response.overall_total);
+                        console.log('Overall total updated successfully');
+                    } else {
+                        console.error('Error updating overall total:', response);
+                    }
+                });
+            });
+        });
+    </script>
+    
+    
+    
+    {% endblock content %} 

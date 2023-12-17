@@ -1,0 +1,230 @@
+{% extends 'admin/admin_base.html'%}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Admin | Blogs{% endblock %}
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == "success" %}
+<div class="w-3/4 ml-72 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  {{message}}
+</div>
+{% else %}
+<div class="w-3/4 ml-72 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+  <strong>Error! </strong>{{message}}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+<div class="">
+<form class="w-3/4 ml-72"  method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <div class="mb-6">
+    <label for="{{ form.title.id_for_label }}"  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
+    {% render_field form.title name="title"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter Blog Title" %}
+  </div>
+
+  <div class="mb-6">
+    <label for="{{ form.content.id_for_label }}"  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content</label>
+    {% render_field form.content name="content" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter Blog Content" %}
+  </div>
+  <div class="mb-6">
+    <label for="{{ form.author.id_for_label }}"  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Author</label>
+    {% render_field form.author name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Author" %}
+</div>
+
+<div class="mb-6">
+  <label for="{{ form.image.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product image</label>
+  <input type="file" id="{{ form.image.id_for_label }}" name="{{ form.image.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" onchange="readURL(this)">
+  
+  <!-- leftbox -->
+  <div class="box-2">
+    <div class="result"></div>
+  </div>
+  <!-- rightbox -->
+  <div class="box-2 img-result hide">
+    <!-- result of crop -->
+    <img class="cropped" src="" alt="">
+  </div>
+  <!-- input file -->
+  <div class="box">
+    <div class="options hidden">
+      <label>Width</label>
+      <input type="number" class="img-w border" value="300" min="100" max="1200" />
+    </div>
+    <!-- save btn -->
+    <button class="btn save hide border p-2 bg-black-200 mt-2 rounded">Save</button>
+  </div>
+</div>
+<div class="mb-6 flex">
+
+      <img src="{{ blog.image.url }}" alt="Additional Image" class="mb-2" style="max-width: 200px;">
+
+</div>
+<div class="mb-6">
+  <label for="{{ img_form.add_images.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Additional Images</label>
+  <input type="file" id="{{ img_form.add_images.id_for_label }}" name="{{ img_form.add_images.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" onchange="readURL2(this)" multiple>
+  
+  <!-- leftbox -->
+  <div class="box-2">
+    <div class="result2"></div>
+  </div>
+  <!-- rightbox -->
+  <div class="box-2 img-result2 hide flex space-x-4">
+    <!-- result of crop -->
+    {% comment %} <img class="cropped_result2_containe" src="" alt=""> {% endcomment %}
+    <div id="cropped_result2_container" ></div>
+  </div>
+  <!-- input file -->
+  <div class="box ">
+    <div class="options2 hidden ">
+      <label>Width</label>
+      <input type="number" class="img-w2 border" value="300" min="100" max="1200" />
+    </div>
+    <!-- save btn -->
+    <button class="btn border p-2 bg-black-200 mt-2 rounded" onclick="saveCroppedImages(event)">Save</button>
+
+  </div>
+</div>
+
+  <div class="mb-6 flex">
+    {% for img in blog.additional_images.all %}
+        <img src="{{ img.add_images.url }}" alt="Additional Image" class="mb-2" style="max-width: 200px;">
+    {% endfor %}
+</div>
+  <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+</form>
+</div>
+<script>
+  let result = document.querySelector('.result'),
+    img_result = document.querySelector('.img-result'),
+    img_w = document.querySelector('.img-w'),
+    options = document.querySelector('.options'),
+    save = document.querySelector('.save'),
+    cropped = document.querySelector('.cropped'),
+    upload = document.querySelector('#{{ form.image.id_for_label }}'),
+    cropper = '';
+
+  upload.addEventListener('change', (e) => {
+    if (e.target.files.length) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target.result) {
+          let img = document.createElement('img');
+          img.id = 'image';
+          img.src = e.target.result;
+          result.innerHTML = '';
+          result.appendChild(img);
+          save.classList.remove('hide');
+          options.classList.remove('hide');
+          cropper = new Cropper(img);
+        }
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+
+  save.addEventListener('click', (e) => {
+    e.preventDefault();
+    let imgSrc = cropper.getCroppedCanvas({
+      width: img_w.value
+    }).toDataURL();
+    cropped.classList.remove('hide');
+    img_result.classList.remove('hide');
+    cropped.src = imgSrc;
+
+    // Hide unnecessary elements after saving
+    result.innerHTML = '';
+    save.classList.add('hide');
+    options.classList.add('hide');
+  });
+
+  function readURL(input) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        $('#{{ form.image.id_for_label }}').attr('src', e.target.result);
+      };
+      reader.readAsDataURL(input.files[0]);
+      setTimeout(initCropper, 1000);
+    }
+  }
+
+  function initCropper() {
+    var image = document.getElementById('image');
+    var cropper = new Cropper(image, {
+      aspectRatio: 16 / 9,
+      crop: function (e) {
+        console.log(e.detail.x);
+        console.log(e.detail.y);
+      }
+    });
+
+    document.getElementById('crop_button').addEventListener('click', function () {
+      var croppedCanvas = cropper.getCroppedCanvas();
+      var imgurl = croppedCanvas.toDataURL();
+
+      var img = document.createElement("img");
+      img.src = imgurl;
+      document.getElementById("cropped_result").appendChild(img);
+    });
+  }
+</script>
+
+<script>
+  let croppers2 = [];
+
+  function readURL2(input) {
+    if (input.files && input.files.length) {
+      for (let i = 0; i < input.files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target.result) {
+            let img = document.createElement('img');
+            img.src = e.target.result;
+            document.querySelector('.result2').appendChild(img);
+
+            // Create a new Cropper instance for each image
+            croppers2.push(new Cropper(img));
+          }
+        };
+        reader.readAsDataURL(input.files[i]);
+      }
+    }
+  }
+
+  function saveCroppedImages(event) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+
+    // Clear previous images
+    document.querySelector('.result2').innerHTML = '';
+
+    let croppedImagesData = [];
+
+    for (let i = 0; i < croppers2.length; i++) {
+      let imgSrc = croppers2[i].getCroppedCanvas({
+        width: document.querySelector('.img-w2').value
+      }).toDataURL();
+
+      // Create img element and append to the result container
+      let img = document.createElement('img');
+      img.src = imgSrc;
+      img.classList.add('cropped_result2'); // Add any additional classes as needed
+      document.querySelector('.result2').appendChild(img);
+
+      // Collect the data URL of the cropped image
+      croppedImagesData.push(imgSrc);
+    }
+
+    // Set the value of the input field to the array of data URLs
+    document.getElementById('{{ img_form.add_images.id_for_label }}').value = JSON.stringify(croppedImagesData);
+  }
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.css">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.js"></script>
+{% endblock %}

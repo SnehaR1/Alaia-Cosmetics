@@ -1,0 +1,549 @@
+{% extends 'admin/admin_base.html'%}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Admin | Product{% endblock %}
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == "success" %}
+<div class="w-3/4 ml-72 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  {{message}}
+</div>
+{% else %}
+<div class="w-3/4 ml-72 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+  <strong>Error! </strong>{{message}}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+<form class=" w-3/4 ml-72" enctype="multipart/form-data" method="post" >
+  {% csrf_token%}
+ 
+  <div class="mb-6">
+    <label for="{{ form.product.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Name</label>
+    {% render_field form.product class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+  </div> 
+
+  <div class="mb-6">
+    <label for="{{ form.image.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product image</label>
+    <input type="file" id="{{ form.image.id_for_label }}" name="{{ form.image.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" onchange="readURL(this)">
+    
+    <!-- leftbox -->
+    <div class="box-2">
+      <div class="result"></div>
+    </div>
+    <!-- rightbox -->
+    <div class="box-2 img-result hide">
+      <!-- result of crop -->
+      <img class="cropped" src="" alt="">
+    </div>
+    <!-- input file -->
+    <div class="box">
+      <div class="options hidden">
+        <label>Width</label>
+        <input type="number" class="img-w border" value="300" min="100" max="1200" />
+      </div>
+      <!-- save btn -->
+      <button class="btn save hide border p-2 bg-black-200 mt-2 rounded">Save</button>
+    </div>
+  </div>
+  <div class="mb-6">
+    <label for="{{ form.new_color.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Color</label>
+    {% render_field form.new_color class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+  </div> 
+  <div class="mb-6">
+    <label for="{{ form.new_quantity.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Quantity</label>
+    {% render_field form.new_quantity class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+  </div> 
+
+
+<div class="mb-6">
+    <label for="{{ form.stock.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Stock</label>
+    {% render_field form.stock class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+</div>
+
+<div class="mb-6">
+  <label for="{{ form.old_price.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">old_price</label>
+  {% render_field form.old_price class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+</div>
+
+<!-- Second set of elements for additional images -->
+<div class="mb-6">
+  <label for="{{ img_form.images.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Additional Images</label>
+  <input type="file" id="{{ img_form.images.id_for_label }}" name="{{ img_form.images.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" onchange="readURL2(this)" multiple>
+  
+  <!-- leftbox -->
+  <div class="box-2">
+    <div class="result2"></div>
+  </div>
+  <!-- rightbox -->
+  <div class="box-2 img-result2 hide flex space-x-4">
+    <!-- result of crop -->
+    {% comment %} <img class="cropped_result2_containe" src="" alt=""> {% endcomment %}
+    <div id="cropped_result2_container" ></div>
+  </div>
+  <!-- input file -->
+  <div class="box ">
+    <div class="options2 hidden ">
+      <label>Width</label>
+      <input type="number" class="img-w2 border" value="300" min="100" max="1200" />
+    </div>
+    <!-- save btn -->
+    <buttonvclass="btn border p-2 bg-black-200 mt-2 rounded" onclick="saveCroppedImages(event)">Save</button>
+
+  </div>
+</div>
+{% comment %} {% if product_variant.productimages_set.all %}
+  <div>
+    <h3>Saved Images:</h3>
+    {% for image in product_variant.productimages_set.all %}
+      <img src="{{ image.url }}" alt="Product Image">
+    {% endfor %}
+  </div>
+{% endif %} {% endcomment %}
+  
+  {% comment %} <div class="mb-6">
+    <label for="{{ img_form.images.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Additional images</label>
+    <input type="file" id="{{ img_form.images.id_for_label }}_imageCropFileInput" name="images" multiple=""  onchange="imagesPreview(this)">
+  </div>
+  
+  <input type="hidden" id="profile_img_data">
+  <div class="img-preview"></div>
+  <div id="galleryImages" class=""></div>
+  <div id="cropper">
+    <canvas id="cropperImg" width="0" height="0"></canvas>
+    {% comment %} <button class="btn save hide border p-2 bg-black-200 mt-2 rounded">Save</button> {% endcomment %}
+    {% comment %} <button class="cropImageBtn" id="cropImageBtn" onclick="image_crop()">Crop</button>
+  </div> {% endcomment %} 
+    <button type="submit" class=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+  </form>
+
+  <script>
+    let result = document.querySelector('.result'),
+      img_result = document.querySelector('.img-result'),
+      img_w = document.querySelector('.img-w'),
+      options = document.querySelector('.options'),
+      save = document.querySelector('.save'),
+      cropped = document.querySelector('.cropped'),
+      upload = document.querySelector('#{{ form.image.id_for_label }}'),
+      cropper = '';
+  
+    upload.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target.result) {
+            let img = document.createElement('img');
+            img.id = 'image';
+            img.src = e.target.result;
+            result.innerHTML = '';
+            result.appendChild(img);
+            save.classList.remove('hide');
+            options.classList.remove('hide');
+            cropper = new Cropper(img);
+          }
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });
+  
+    save.addEventListener('click', (e) => {
+      e.preventDefault();
+      let imgSrc = cropper.getCroppedCanvas({
+        width: img_w.value
+      }).toDataURL();
+      cropped.classList.remove('hide');
+      img_result.classList.remove('hide');
+      cropped.src = imgSrc;
+  
+      // Hide unnecessary elements after saving
+      result.innerHTML = '';
+      save.classList.add('hide');
+      options.classList.add('hide');
+    });
+  
+    function readURL(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          $('#{{ form.image.id_for_label }}').attr('src', e.target.result);
+        };
+        reader.readAsDataURL(input.files[0]);
+        setTimeout(initCropper, 1000);
+      }
+    }
+  
+    function initCropper() {
+      var image = document.getElementById('image');
+      var cropper = new Cropper(image, {
+        aspectRatio: 16 / 9,
+        crop: function (e) {
+          console.log(e.detail.x);
+          console.log(e.detail.y);
+        }
+      });
+  
+      document.getElementById('crop_button').addEventListener('click', function () {
+        var croppedCanvas = cropper.getCroppedCanvas();
+        var imgurl = croppedCanvas.toDataURL();
+  
+        var img = document.createElement("img");
+        img.src = imgurl;
+        document.getElementById("cropped_result").appendChild(img);
+      });
+    }
+  </script>
+  
+
+
+<!--Additional Images-->
+{% comment %} <script>
+  let croppers2 = [];
+
+  function readURL2(input) {
+    if (input.files && input.files.length) {
+      for (let i = 0; i < input.files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target.result) {
+            let img = document.createElement('img');
+            img.src = e.target.result;
+            document.querySelector('.result2').appendChild(img);
+            
+            // Create a new Cropper instance for each image
+            croppers2.push(new Cropper(img));
+          }
+        };
+        reader.readAsDataURL(input.files[i]);
+      }
+    }
+  }
+  
+  function saveCroppedImages(event) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+  
+    // Clear previous images
+    document.querySelector('.result2').innerHTML = '';
+  
+    for (let i = 0; i < croppers2.length; i++) {
+      let imgSrc = croppers2[i].getCroppedCanvas({
+        width: document.querySelector('.img-w2').value
+      }).toDataURL();
+  
+      // Create img element and append to the result container
+      let img = document.createElement('img');
+      img.src = imgSrc;
+      img.classList.add('cropped_result2'); // Add any additional classes as needed
+      document.querySelector('.result2').appendChild(img);
+    }
+  }
+  
+  
+</script> {% endcomment %}
+
+
+<script>
+  let croppers2 = [];
+
+  function readURL2(input) {
+    if (input.files && input.files.length) {
+      for (let i = 0; i < input.files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target.result) {
+            let img = document.createElement('img');
+            img.src = e.target.result;
+            document.querySelector('.result2').appendChild(img);
+
+            // Create a new Cropper instance for each image
+            croppers2.push(new Cropper(img));
+          }
+        };
+        reader.readAsDataURL(input.files[i]);
+      }
+    }
+  }
+
+  function saveCroppedImages(event) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+
+    // Clear previous images
+    document.querySelector('.result2').innerHTML = '';
+
+    let croppedImagesData = [];
+
+    for (let i = 0; i < croppers2.length; i++) {
+      let imgSrc = croppers2[i].getCroppedCanvas({
+        width: document.querySelector('.img-w2').value
+      }).toDataURL();
+
+      // Create img element and append to the result container
+      let img = document.createElement('img');
+      img.src = imgSrc;
+      img.classList.add('cropped_result2'); // Add any additional classes as needed
+      document.querySelector('.result2').appendChild(img);
+
+      // Collect the data URL of the cropped image
+      croppedImagesData.push(imgSrc);
+    }
+
+    // Set the value of the input field to the array of data URLs
+    document.getElementById('{{ img_form.images.id_for_label }}').value = JSON.stringify(croppedImagesData);
+  }
+</script>
+
+{% comment %} <script>
+  let croppers2 = [];
+
+  function readURL2(input) {
+  if (input.files && input.files.length) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target.result) {
+        let img = document.createElement('img');
+        img.src = e.target.result;
+        document.querySelector('.result2').appendChild(img);
+
+        // Destroy existing cropper instances
+        for (let i = 0; i < croppers2.length; i++) {
+          croppers2[i].destroy();
+        }
+
+        // Clear the croppers2 array
+        croppers2 = [];
+
+        // Create a new Cropper instance for the latest image
+        croppers2.push(new Cropper(img));
+      }
+    };
+    reader.readAsDataURL(input.files[0]); // Only read the first file
+  }
+}
+
+
+  function saveCroppedImages(event) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+
+    // Clear previous images
+    document.querySelector('.result2').innerHTML = '';
+
+    for (let i = 0; i < croppers2.length; i++) {
+        let imgSrc = croppers2[i].getCroppedCanvas({
+            width: document.querySelector('.img-w2').value
+        }).toDataURL();
+
+        // Create img element and append to the result container
+        let img = document.createElement('img');
+        img.src = imgSrc;
+        img.classList.add('cropped_result2'); // Add any additional classes as needed
+        document.querySelector('.result2').appendChild(img);
+    }
+
+    // Close the Cropper canvas
+    for (let i = 0; i < croppers2.length; i++) {
+        croppers2[i].destroy();
+    }
+
+    // Clear the croppers2 array
+    croppers2 = [];
+}
+
+  
+</script> {% endcomment %}
+  {% comment %} <script>
+    
+var c;
+var galleryImagesContainer = document.getElementById('galleryImages');
+var imageCropFileInput = document.getElementById('imageCropFileInput');
+var cropperImageInitCanvas = document.getElementById('cropperImg');
+var cropImageButton = document.getElementById('cropImageBtn');
+// Crop Function On change
+  function imagesPreview(input) {
+    var cropper;
+    galleryImagesContainer.innerHTML = '';
+    var img = [];
+    if(cropperImageInitCanvas.cropper){
+      cropperImageInitCanvas.cropper.destroy();
+      cropImageButton.style.display = 'none';
+      cropperImageInitCanvas.width = 0;
+      cropperImageInitCanvas.height = 0;
+    }
+    if (input.files.length) {
+      var i = 0;
+      var index = 0;
+      for (let singleFile of input.files) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          var blobUrl = event.target.result;
+          img.push(new Image());
+          img[i].onload = function(e) {
+            // Canvas Container
+            var singleCanvasImageContainer = document.createElement('div');
+            singleCanvasImageContainer.id = 'singleImageCanvasContainer'+index;
+            singleCanvasImageContainer.className = 'singleImageCanvasContainer';
+            // Canvas Close Btn
+            var singleCanvasImageCloseBtn = document.createElement('button');
+            var singleCanvasImageCloseBtnText = document.createTextNode('Close');
+            // var singleCanvasImageCloseBtnText = document.createElement('i');
+            // singleCanvasImageCloseBtnText.className = 'fa fa-times';
+            singleCanvasImageCloseBtn.id = 'singleImageCanvasCloseBtn'+index;
+            singleCanvasImageCloseBtn.className = 'singleImageCanvasCloseBtn';
+            singleCanvasImageCloseBtn.onclick = function() { removeSingleCanvas(this) };
+            singleCanvasImageCloseBtn.appendChild(singleCanvasImageCloseBtnText);
+            singleCanvasImageContainer.appendChild(singleCanvasImageCloseBtn);
+            // Image Canvas
+            var canvas = document.createElement('canvas');
+            canvas.id = 'imageCanvas'+index;
+            canvas.className = 'imageCanvas singleImageCanvas';
+            canvas.width = e.currentTarget.width;
+            canvas.height = e.currentTarget.height;
+            canvas.onclick = function() { cropInit(canvas.id); };
+            singleCanvasImageContainer.appendChild(canvas)
+            // Canvas Context
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(e.currentTarget,0,0);
+            // galleryImagesContainer.append(canvas);
+            galleryImagesContainer.appendChild(singleCanvasImageContainer);
+            while (document.querySelectorAll('.singleImageCanvas').length == input.files.length) {
+              var allCanvasImages = document.querySelectorAll('.singleImageCanvas')[0].getAttribute('id');
+              cropInit(allCanvasImages);
+              break;
+            };
+            urlConversion();
+            index++;
+          };
+          img[i].src = blobUrl;
+          i++;
+        }
+        reader.readAsDataURL(singleFile);
+      }
+      // addCropButton();
+      // cropImageButton.style.display = 'block';
+    }
+  }
+  imageCropFileInput.addEventListener("change", function(event){
+    imagesPreview(event.target);
+  });
+// Initialize Cropper
+  function cropInit(selector) {
+    c = document.getElementById(selector);
+    console.log(document.getElementById(selector));
+    if(cropperImageInitCanvas.cropper){
+        cropperImageInitCanvas.cropper.destroy();
+    }
+    var allCloseButtons = document.querySelectorAll('.singleImageCanvasCloseBtn');
+    for (let element of allCloseButtons) {
+      element.style.display = 'block';
+    }
+    c.previousSibling.style.display = 'none';
+    // c.id = croppedImg;
+    var ctx=c.getContext('2d');
+    var imgData=ctx.getImageData(0, 0, c.width, c.height);
+    var image = cropperImageInitCanvas;
+    image.width = c.width;
+    image.height = c.height;
+    var ctx = image.getContext('2d');
+    ctx.putImageData(imgData,0,0);
+    cropper = new Cropper(image, {
+      aspectRatio: 1 / 1,
+      preview: '.img-preview',
+      crop: function(event) {
+        // console.log(event.detail.x);
+        // console.log(event.detail.y);
+        // console.log(event.detail.width);
+        // console.log(event.detail.height);
+        // console.log(event.detail.rotate);
+        // console.log(event.detail.scaleX);
+        // console.log(event.detail.scaleY);
+        cropImageButton.style.display = 'block';
+      }
+    });
+
+  }
+// Initialize Cropper on CLick On Image
+  // function cropInitOnClick(selector) {
+  //   if(cropperImageInitCanvas.cropper){
+  //       cropperImageInitCanvas.cropper.destroy();
+  //       // cropImageButton.style.display = 'none';
+  //       cropInit(selector);
+  //       // addCropButton();
+  //       // cropImageButton.style.display = 'block';
+  //   } else {
+  //       cropInit(selector);
+  //       // addCropButton();
+  //       // cropImageButton.style.display = 'block';
+  //   }
+  // }
+// Crop Image
+  function image_crop() {
+    if(cropperImageInitCanvas.cropper){
+      var cropcanvas = cropperImageInitCanvas.cropper.getCroppedCanvas({width: 250, height: 250});
+      // document.getElementById('cropImages').appendChild(cropcanvas);
+      var ctx=cropcanvas.getContext('2d');
+        var imgData=ctx.getImageData(0, 0, cropcanvas.width, cropcanvas.height);
+        // var image = document.getElementById(c);
+        c.width = cropcanvas.width;
+        c.height = cropcanvas.height;
+        var ctx = c.getContext('2d');
+        ctx.putImageData(imgData,0,0);
+        cropperImageInitCanvas.cropper.destroy();
+        cropperImageInitCanvas.width = 0;
+        cropperImageInitCanvas.height = 0;
+        cropImageButton.style.display = 'none';
+        var allCloseButtons = document.querySelectorAll('.singleImageCanvasCloseBtn');
+        for (let element of allCloseButtons) {
+          element.style.display = 'block';
+        }
+        urlConversion();
+        // cropperImageInitCanvas.style.display = 'none';
+    } else {
+      alert('Please select any Image you want to crop');
+    }
+  }
+  cropImageButton.addEventListener("click", function(event) {
+    // Prevent the default form submission
+    event.preventDefault();
+    // Call the image_crop function
+    image_crop();
+  });
+  
+// Image Close/Remove
+  function removeSingleCanvas(selector) {
+    selector.parentNode.remove();
+    urlConversion();
+  }
+// Dynamically Add Crop Btn
+  // function addCropButton() {
+  //   // add crop button
+  //     var cropBtn = document.createElement('button');
+  //     cropBtn.setAttribute('type', 'button');
+  //     cropBtn.id = 'cropImageBtn';
+  //     cropBtn.className = 'btn btn-block crop-button';
+  //     var cropBtntext = document.createTextNode('crop');
+  //     cropBtn.appendChild(cropBtntext);
+  //     document.getElementById('cropper').appendChild(cropBtn);
+  //     cropBtn.onclick = function() { image_crop(cropBtn.id); };
+  // }
+// Get Converted Url
+  function urlConversion() {
+    var allImageCanvas = document.querySelectorAll('.singleImageCanvas');
+    var convertedUrl = '';
+    for (let element of allImageCanvas) {
+      convertedUrl += element.toDataURL('image/jpeg');
+      convertedUrl += 'img_url';
+    }
+    document.getElementById('profile_img_data').value = convertedUrl;
+  }
+
+  </script> {% endcomment %}
+  <!-- Include Cropper.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.js"></script>
+    
+  {% endblock %}  

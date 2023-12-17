@@ -1,0 +1,27 @@
+{% extends 'core/core_base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+
+
+
+<div class="2xl:container 2xl:mx-auto lg:py-16 lg:px-20 md:py-12 md:px-6 py-9 px-4 ">
+    <div class="flex flex-col lg:flex-row justify-between gap-8b ">
+        <div class="w-full lg:w-5/12 flex flex-col justify-center mb-72">
+            <h1 class="text-3xl lg:text-4xl font-bold leading-9 text-gray-800 dark:text-white pb-4">{{blog.title}}</h1>
+            <h1 class="text-3xl lg:text-4xl font-bold leading-9 text-gray-800 dark:text-white pb-4 ml-72">-{{blog.author}}</h1>
+            <p  class="text-l lg:text-l font-bold leading-9 text-gray-400 dark:text-white pb-4">{{blog.date}}</p>
+            <p class="font-normal text-base leading-6 text-gray-600 dark:text-white">{{blog.content}}</p>
+        </div>
+        <div class="w-full lg:w-8/12">
+            <img class="w-full h-full" src="{{blog.image.url}}" alt="blog image" />
+        </div>
+    </div>
+
+    <div class="flex lg:flex-row flex-col justify-between gap-8 pt-12 mt-0"> 
+        {%for image in blog_images%}<img class="w-full h-full" src="{{image.add_images.url}}" alt="blog image" />{%endfor%}
+   
+    </div>
+    <p class="font-normal text-base leading-6 text-gray-600 dark:text-white">{{blog.content}}</p>
+</div>
+{% endblock %}

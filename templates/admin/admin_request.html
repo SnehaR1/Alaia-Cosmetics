@@ -1,0 +1,79 @@
+{% extends 'admin/admin_base.html'%}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Admin | Requests{% endblock %}
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == "success" %}
+<div class="w-3/4 ml-72 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  {{message}}
+</div>
+{% else %}
+<div class="w-3/4 ml-72 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+  <strong>Error! </strong>{{message}}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+   
+    <table class="w-3/4 ml-72 text-sm text-left text-gray-500 dark:text-gray-400">
+       
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+               
+                <th scope="col" class="px-6 py-3">
+                    Product
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    User
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Reason
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Status
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Action
+                </th>
+            </tr>
+        </thead>
+        {%for req in return_reqs %}
+        <tbody>
+          
+            <td class="px-6 py-4">
+                {{req.order.product.title}}
+            </td>
+            <td class="px-6 py-4">
+                {{req.user.first_name}} {{req.user.last_name}}
+            </td>
+            <td class="px-6 py-4">
+                {{req.reason_for_return}}
+            </td>
+            <td class="px-6 py-4">
+               {%if req.is_approved  %}<span class="text-green-500">Request Approved </span>{%else%} <span class="text-red-500">Pending </span>{%endif%}
+            </td>
+            <td class="px-6 py-4">
+                <div class="flex space-x-4">
+                    {%if req.is_approved%}
+                    <button  type="button" class="  text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-xl text-sm inline-flex items-center px-5 py-2.5 text-center ">Approved</button>
+                    {%else%}
+                    <form method="post" action="{% url 'admin_request' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="reject_return_id" value="{{ req.id }}">
+                <button name="Reject" type="submit" class=" text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-xl text-sm inline-flex items-center px-5 py-2.5 text-center ">Reject</button>
+                <button name="Approve" type="submit" class=" text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-xl text-sm inline-flex items-center px-5 py-2.5 text-center ">Approve</button>
+                {%endif%}
+                    </form>
+                </div>
+            </td>
+            
+            
+        </tbody>
+        {% endfor %}
+    </table>
+</div>
+{%endblock%}
