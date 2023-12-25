@@ -115,7 +115,8 @@ class Color(models.Model):
 
 
 class Quantity(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.DecimalField(max_digits=10, decimal_places=2, default=1.5)
+    unit = models.CharField(max_length=50, default="g", null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Quantities"
@@ -133,6 +134,8 @@ class ProductVariant(models.Model):
         null=False,
         blank=False,
     )
+    date = models.DateField(auto_now_add=True)
+
     image = models.ImageField(
         upload_to=user_directory_path,
         default="images\backgrounds\Face.jpeg",
@@ -145,8 +148,8 @@ class ProductVariant(models.Model):
     quantity = models.ForeignKey(
         Quantity, on_delete=models.CASCADE, default="", null=True, blank=True
     )
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, default="50.00", null=True, blank=True
+    offer_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
     old_price = models.DecimalField(max_digits=10, decimal_places=2, default="50.00")
     stock = models.PositiveIntegerField(default=0)
@@ -218,12 +221,8 @@ class CartOrderItems(models.Model):
 
     def calculate_total(self):
         if self.quantity is not None:
-            if self.price.product.offers_set.exists():
-                product_offer = self.price.product.offers_set.first()
-                return self.quantity * product_offer.price
-            elif self.price.product.category.offers_set.exists():
-                category_offer = self.price.product.category.offers_set.first()
-                return self.quantity * category_offer.price
+            if self.price.offer_price is not None:
+                return self.quantity * self.price.offer_price
             elif self.price.old_price is not None:
                 return self.quantity * self.price.old_price
         return 0
@@ -402,11 +401,9 @@ class Offers(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, null=True, blank=True
     )
+
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, null=True, blank=True
-    )
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, default="50.00", null=True, blank=True
     )
 
     valid_from = models.DateTimeField(default=timezone.now)
@@ -425,13 +422,15 @@ class Offers(models.Model):
             discounted_price = product_variant.old_price - (
                 (discount_percentage / 100) * product_variant.old_price
             )
-            self.price = discounted_price
-            self.save()
-        else:
-            self.price = None
-            self.save()
+            product_variant.offer_price = discounted_price
 
-        return self.price
+            product_variant.save()
+        else:
+            product_variant.offer_price.offer_price = None
+
+            product_variant.save()
+
+        return product_variant.offer_price
 
     def new_price(self):
         product_variants = None

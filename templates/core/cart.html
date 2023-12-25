@@ -3,9 +3,25 @@
 {% load widget_tweaks %}
 {% block title %}Alaia | Cart{% endblock %}
 {% block content %}
+
 <div class="bg-gray-100 h-screen py-8">
     <div class="container mx-auto px-4">
         <h1 class="text-2xl font-semibold mb-4">Shopping Cart</h1>
+
+        
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == "success" %}
+<div class=" flex justify-center  w-3/4 mx-auto p-4  text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+  {{message}}
+</div> 
+{% else %}
+<div class="flex justify-center  w-3/4 mx-auto p-4  text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+  <strong>Error!</strong> {{message}}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
         <div class="flex flex-col md:flex-row gap-4">
             <div class="md:w-3/4">
                 <div class="bg-white rounded-lg shadow-md p-6 mb-4">
@@ -16,6 +32,7 @@
                                 <th class="text-left font-semibold">Price</th>
                                 <th class="text-left font-semibold">Quantity</th>
                                 <th class="text-left font-semibold">Total</th>
+                                <th class="text-left font-semibold">Stock</th>
                                 <th class="text-left font-semibold">Action</th>
                             </tr>
                         </thead>
@@ -27,14 +44,13 @@
                                         {% if item.price.image %}
                                         <img class="h-16 w-16 mr-4" src="{{ item.price.image.url }}" alt="Product image">
                                         {% endif %}
-                                        <span class="font-semibold"> {{ item.price.product.title }}-{{item.price.color}}-{{item.price.quantity}}</span>
+                                        <span class="font-semibold"> {{ item.price.product.title }}-{{item.price.color}}-{{item.price.quantity.name}}{{item.price.quantity.unit}}</span>
                                     </div>
                                 </td>
                                 
-                                {% if product_offer%}
-                                <td class="py-4">₹{{ product_offer.price }}</td>
-                                {%elif category_offer%}
-                                <td class="py-4">₹{{ category_offer.price }}</td>
+                                {% if item.price.offer_price%}
+                                
+                                <td class="py-4">₹{{ item.price.offer_price }}</td>
                                 {%else%}
                                 <td class="py-4">₹{{ item.price.old_price }}</td>
                                 {%endif%}
@@ -54,6 +70,17 @@
                                 <td class="py-4 item-total" data-item-id="{{ item.id }}">
             
                                     <span class="total-display" data-item-id="{{ item.id }}">₹{{ item.calculate_total }}</span>
+                                </td>
+                                <td class="py-4">
+                                    {% if item.price.stock == 0 %}
+                                    <span class="text-red-500">Out of Stock</span>
+                                  {% elif item.price.stock < 5 %}
+                                    <span class="text-red-500">Low Stock</span>
+                                  {% else %}
+                                    <span class="text-green-500">In Stock</span>
+                                  {% endif %}
+                                  
+                                    
                                 </td>
                                 
 

@@ -47,6 +47,9 @@
       </div>
       <!-- save btn -->
       <button class="btn save hide border p-2 bg-black-200 mt-2 rounded">Save</button>
+      <!-- close button -->
+{% comment %} <button class="btn close hide border p-2 bg-black-200 mt-2 rounded">Close</button> {% endcomment %}
+
     </div>
   </div>
   <div class="mb-6">
@@ -57,7 +60,10 @@
     <label for="{{ form.new_quantity.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Quantity</label>
     {% render_field form.new_quantity class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
   </div> 
-
+  <div class="mb-6">
+    <label for="{{ form.unit.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit</label>
+    {% render_field form.unit value=product_variant.quantity.name class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+  </div> 
 
 <div class="mb-6">
     <label for="{{ form.stock.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Stock</label>
@@ -95,28 +101,7 @@
 
   </div>
 </div>
-{% comment %} {% if product_variant.productimages_set.all %}
-  <div>
-    <h3>Saved Images:</h3>
-    {% for image in product_variant.productimages_set.all %}
-      <img src="{{ image.url }}" alt="Product Image">
-    {% endfor %}
-  </div>
-{% endif %} {% endcomment %}
-  
-  {% comment %} <div class="mb-6">
-    <label for="{{ img_form.images.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Additional images</label>
-    <input type="file" id="{{ img_form.images.id_for_label }}_imageCropFileInput" name="images" multiple=""  onchange="imagesPreview(this)">
-  </div>
-  
-  <input type="hidden" id="profile_img_data">
-  <div class="img-preview"></div>
-  <div id="galleryImages" class=""></div>
-  <div id="cropper">
-    <canvas id="cropperImg" width="0" height="0"></canvas>
-    {% comment %} <button class="btn save hide border p-2 bg-black-200 mt-2 rounded">Save</button> {% endcomment %}
-    {% comment %} <button class="cropImageBtn" id="cropImageBtn" onclick="image_crop()">Crop</button>
-  </div> {% endcomment %} 
+
     <button type="submit" class=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
   </form>
 
@@ -126,6 +111,7 @@
       img_w = document.querySelector('.img-w'),
       options = document.querySelector('.options'),
       save = document.querySelector('.save'),
+      close = document.querySelector('.close'),
       cropped = document.querySelector('.cropped'),
       upload = document.querySelector('#{{ form.image.id_for_label }}'),
       cropper = '';
@@ -174,7 +160,26 @@
         setTimeout(initCropper, 1000);
       }
     }
+    close.addEventListener("click", (e) => {
+      e.preventDefault(); // Prevent default action (e.g., form submission)
   
+      result.innerHTML = "";
+      save.classList.add("hide");
+      options.classList.add("hide");
+      img_result.classList.add("hide");
+      cropped.classList.add("hide");
+  
+      // Remove the image element
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+  
+      // Reset the input file
+      upload.value = ""; // Clears the selected file
+    });
+  
+
     function initCropper() {
       var image = document.getElementById('image');
       var cropper = new Cropper(image, {

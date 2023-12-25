@@ -48,7 +48,17 @@ urlpatterns = [
     path("home/", home, name="home"),
     path("shop/", shop, name="shop"),
     path("shop/category/<str:category_title>/", shop, name="shop_category"),
+    path(
+        "shop/category/<str:category_title>/brand/<str:brand_title>/",
+        shop,
+        name="category_brand",
+    ),
     path("shop/brand/<str:brand_title>/", shop, name="shop_brand"),
+    path(
+        "shop/brand/<str:brand_title>/category/<str:category_title>/",
+        shop,
+        name="brand_category",
+    ),
     path("user_dashboard/", user_dashboard, name="user_dashboard"),
     path("logout/", logout_view, name="logout_view"),
     path("product_details/<int:pv_id>/", product_details, name="product_details"),

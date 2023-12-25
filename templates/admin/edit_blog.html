@@ -126,20 +126,7 @@
     }
   });
 
-  save.addEventListener('click', (e) => {
-    e.preventDefault();
-    let imgSrc = cropper.getCroppedCanvas({
-      width: img_w.value
-    }).toDataURL();
-    cropped.classList.remove('hide');
-    img_result.classList.remove('hide');
-    cropped.src = imgSrc;
-
-    // Hide unnecessary elements after saving
-    result.innerHTML = '';
-    save.classList.add('hide');
-    options.classList.add('hide');
-  });
+ 
 
   function readURL(input) {
     if (input.files && input.files[0]) {
@@ -171,6 +158,20 @@
       document.getElementById("cropped_result").appendChild(img);
     });
   }
+  save.addEventListener('click', (e) => {
+    e.preventDefault();
+    let imgSrc = cropper.getCroppedCanvas({
+      width: img_w.value
+    }).toDataURL();
+    cropped.classList.remove('hide');
+    img_result.classList.remove('hide');
+    cropped.src = imgSrc;
+
+    // Hide unnecessary elements after saving
+    result.innerHTML = '';
+    save.classList.add('hide');
+    options.classList.add('hide');
+  });
 </script>
 
 <script>

@@ -72,7 +72,7 @@ def admin_login(request):
     return render(request, "admin/admin_login.html")
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def admin_dashboard(request):
     filter_type = "weekly"
     if request.method == "POST":
@@ -172,7 +172,7 @@ def admin_dashboard(request):
     )
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def admin_users(request):
     users = CustomUser.objects.all()
 
@@ -190,14 +190,6 @@ def admin_users(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
-def dlt_user(request, user_id):
-    user = get_object_or_404(CustomUser, id=user_id)
-    user.delete()
-    messages.success(request, "User deleted successfully!")
-    return redirect("admin_users")
-
-
-@login_required(login_url="/admin/")
 def admin_category(request):
     if request.method == "POST":
         category_name = request.POST.get("category_name")
@@ -210,16 +202,6 @@ def admin_category(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
-def dlt_category(request, cid):
-    if request.method == "POST":
-        print("Attempt to delete brand with ID:", cid)
-        category = get_object_or_404(Category, id=cid)
-        category.delete()
-        messages.success(request, "Category deleted successfully!")
-        return redirect("admin_category")
-
-
-@login_required(login_url="/admin/")
 def admin_brand(request):
     if request.method == "POST":
         brand_name = request.POST.get("brand_name")
@@ -231,49 +213,58 @@ def admin_brand(request):
     return render(request, "admin/admin_brand.html", {"brands": brands})
 
 
-def dlt_brand(request, bid):
-    if request.method == "POST":
-        print("Attempt to delete brand with ID:", bid)
-        brand = get_object_or_404(Brand, id=bid)
-        brand.delete()
-        messages.success(request, "Brand deleted successfully!")
-        return redirect("admin_brand")
-
-
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def admin_products(request):
-    products = Product.objects.all()
+    products = Product.objects.all().order_by("-date")
     return render(request, "admin/admin_products.html", {"products": products})
 
 
-@login_required(login_url="/admin/")
-def add_product(request, pid=None):
-    if pid:
-        product = get_object_or_404(Product, pk=pid)
-        operation = "Edit"
-    else:
-        product = Product()
-        operation = "Add"
+@user_passes_test(lambda u: u.is_superuser)
+def add_product(request):
+    if request.method == "POST":
+        form = AddProduct(request.POST)
 
+        if form.is_valid():
+            form.save()
+
+            messages.success(request, f"Product added successfully!")
+            return redirect("admin_products")
+    else:
+        form = AddProduct()
+
+    context = {"form": form}
+
+    return render(request, "admin/add_product.html", context)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_product(request, pid=None):
+    product = get_object_or_404(Product, pk=pid)
     if request.method == "POST":
         form = AddProduct(request.POST, request.FILES, instance=product)
 
         if form.is_valid():
             form.save()
 
-            messages.success(request, f"Product {operation}ed successfully!")
+            messages.success(request, f"Product Updated successfully!")
             return redirect("admin_products")
     else:
-        form = AddProduct(instance=product)
+        form = AddProduct(
+            instance=product,
+            initial={
+                "brand": product.brand,
+                "category": product.category,
+            },
+        )
 
     context = {"form": form, "product": product}
 
-    return render(request, "admin/add_product.html", context)
+    return render(request, "admin/edit_product.html", context)
 
 
-@login_required(login_url="/admin/")
-def admin_variant(request, pid=None):
-    products = Product.objects.all()
+@user_passes_test(lambda u: u.is_superuser)
+def admin_variant(request):
+    products = ProductVariant.objects.all().order_by("-date")
 
     context = {
         "products": products,
@@ -281,7 +272,7 @@ def admin_variant(request, pid=None):
     return render(request, "admin/admin_variants.html", context)
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def add_variant(request):
     if request.method == "POST":
         form = ProductVariantForm(request.POST, request.FILES)
@@ -294,13 +285,19 @@ def add_variant(request):
             if new_color_name:
                 color, created = Color.objects.get_or_create(name=new_color_name)
                 product_variant.color = color
+            else:
+                product_variant.color = None
 
             new_quantity_name = request.POST.get("new_quantity")
+            unit = request.POST.get("unit")
+
             if new_quantity_name:
                 quantity, created = Quantity.objects.get_or_create(
-                    name=new_quantity_name
+                    name=new_quantity_name, unit=unit
                 )
                 product_variant.quantity = quantity
+            else:
+                product_variant.quantity = None  # or set it to another default value
 
             product_variant.save()
 
@@ -314,7 +311,10 @@ def add_variant(request):
             messages.success(request, "Product and images added successfully!")
             return redirect("admin_variant")
         else:
-            messages.error(request, "Something went wrong")
+            error_message = "Failed to add the Offer! Please correct the following errors: {}".format(
+                form.errors
+            )
+            messages.error(request, error_message)
     else:
         form = ProductVariantForm()
         img_form = ProductImagesForm()
@@ -326,23 +326,6 @@ def add_variant(request):
     return render(request, "admin/add_variant.html", context)
 
 
-@user_passes_test(lambda u: u.is_superuser)
-def dlt_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    product.delete()
-    messages.success(request, "Product deleted successfully!")
-    return redirect("admin_products")
-
-
-@user_passes_test(lambda u: u.is_superuser)
-def dlt_variant(request, pv_id):
-    product_variant = get_object_or_404(ProductVariant, id=pv_id)
-    product_variant.delete()
-    messages.success(request, "Product Variant deleted successfully!")
-    return redirect("admin_variant")
-
-
-@login_required(login_url="/admin/")
 def logout_view(request):
     logout(request)
     messages.success(request, "Logged out successfully!")
@@ -361,9 +344,9 @@ def edit_user(request, user_id):
         return redirect("admin_users")
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def admin_orders(request):
-    orders = Order.objects.all()
+    orders = Order.objects.all().order_by("-created_at")
     orderitems = OrderItem.objects.all()
     productvariants = Product.objects.select_related("productvariant").all()
     return render(
@@ -393,7 +376,7 @@ def update_status(request, order_item_pk):
         elif new_status == "request processing" or new_status == "Request Approved":
             messages.error(request, "invalid update")
             return redirect("admin_orders")
-        elif new_status == "delivery":
+        elif new_status == "delivered":
             order_item.status = new_status
             order_item.delivery_date = timezone.now()
             order_item.save()
@@ -481,6 +464,7 @@ def toggle_listing(request, pv_id):
 
     if request.method == "POST":
         is_listed = request.POST.get("listing_status") == "listed"
+        print(is_listed)
         product_variant.is_listed = is_listed
         product_variant.save()
 
@@ -507,17 +491,17 @@ def unlist_brand(request, brand_id):
         return render(request, "admin/admin_brand.html", {"brand": brand})
 
 
-@login_required(login_url="/admin/")
 def product_listing(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == "POST":
         is_listed = request.POST.get("listing_status") == "listed"
         product.is_listed = is_listed
         product.save()
-        return render(request, "admin/admin_brand.html", {"product": product})
+        return render(request, "admin/admin_products.html", {"product": product})
+    return render(request, "admin/admin_products.html", {"product": product})
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def edit_variant(request, pv_id):
     product_variant = get_object_or_404(ProductVariant, id=pv_id)
 
@@ -536,9 +520,10 @@ def edit_variant(request, pv_id):
                 product_variant.color = color
 
             new_quantity_name = request.POST.get("new_quantity")
+            unit = request.POST.get("unit")
             if new_quantity_name:
                 quantity, created = Quantity.objects.get_or_create(
-                    name=new_quantity_name
+                    name=new_quantity_name, unit=unit
                 )
                 product_variant.quantity = quantity
 
@@ -555,10 +540,16 @@ def edit_variant(request, pv_id):
 
             messages.success(request, "Product variant updated successfully!")
             return redirect("admin_variant")
-        else:
-            messages.error(request, "Something went wrong")
+
+        for field, errors in form.errors.items():
+            messages.error(request, f"Form error in {field}: {errors.as_text()}")
+
+        for field, errors in img_form.errors.items():
+            messages.error(request, f"Form error in {field}: {errors.as_text()}")
+
     else:
         form = ProductVariantForm(instance=product_variant)
+        form.initial["product"] = product_variant.product
         img_form = ProductImagesForm(instance=product_variant)
 
     context = {
@@ -570,13 +561,13 @@ def edit_variant(request, pv_id):
     return render(request, "admin/edit_variant.html", context)
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def admin_coupon(request):
-    coupons = Coupon.objects.all()
+    coupons = Coupon.objects.all().order_by("valid_to")
     return render(request, "admin/admin_coupon.html", {"coupons": coupons})
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def add_coupon(request):
     if request.method == "POST":
         form = CouponForm(request.POST)
@@ -595,7 +586,7 @@ def add_coupon(request):
     return render(request, "admin/add_coupon.html", {"form": form})
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def edit_coupon(request, c_id):
     coupon = get_object_or_404(Coupon, id=c_id)
     if request.method == "POST":
@@ -616,11 +607,13 @@ def edit_coupon(request, c_id):
     return render(request, "admin/edit_coupon.html", {"form": form})
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def admin_offers(request):
-    offers = Offers.objects.all()
+    offers = Offers.objects.all().order_by("valid_to")
     return render(request, "admin/admin_offers.html", {"offers": offers})
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def add_offers(request):
     if request.method == "POST":
         form = OffersForm(request.POST)
@@ -777,12 +770,30 @@ def report(request):
         return response
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def edit_offers(request, offer_id):
     offer = get_object_or_404(Offers, id=offer_id)
     if request.method == "POST":
         form = OffersForm(request.POST, instance=offer)
         if form.is_valid():
             updated_offer = form.save(commit=False)
+            if not updated_offer.active:
+                if updated_offer.product:
+                    product_variants = updated_offer.product.product_variants.all()
+                    for variant in product_variants:
+                        variant.offer_price = None
+                        variant.save()
+                elif updated_offer.category:
+                    products = updated_offer.category.product_set.all()
+                    product_variants = ProductVariant.objects.filter(
+                        product__in=products
+                    )
+                    for variant in product_variants:
+                        variant.offer_price = None
+                        variant.save()
+            else:
+                updated_offer.new_price()
+
             updated_offer.save()
             messages.success(request, "Offer edited Successfully!!!")
             return redirect("admin_offers")
@@ -792,16 +803,21 @@ def edit_offers(request, offer_id):
             )
             messages.error(request, error_message)
     else:
-        form = OffersForm(instance=offer)
+        form = OffersForm(
+            instance=offer,
+            initial={"product": offer.product, "category": offer.category},
+        )
 
     return render(request, "admin/edit_offers.html", {"form": form})
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def admin_blog(request):
-    blogs = Blogs.objects.all()
+    blogs = Blogs.objects.all().order_by("-date")
     return render(request, "admin/admin_blog.html", {"blogs": blogs})
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def add_blog(request):
     if request.method == "POST":
         form = BlogForm(request.POST, request.FILES)
@@ -819,7 +835,10 @@ def add_blog(request):
             return redirect("admin_blog")
         else:
             print(form.errors)
-            messages.error(request, "Please correct the errors below.")
+            error_message = "Failed to add the Offer! Please correct the following errors: {}".format(
+                form.errors
+            )
+            messages.error(request, error_message)
     else:
         form = BlogForm()
         img_form = BlogImagesForm()
@@ -827,7 +846,7 @@ def add_blog(request):
     return render(request, "admin/add_blog.html", {"form": form, "img_form": img_form})
 
 
-@login_required(login_url="/admin/")
+@user_passes_test(lambda u: u.is_superuser)
 def edit_blog(request, blog_id):
     blog = get_object_or_404(Blogs, id=blog_id)
 
@@ -853,7 +872,10 @@ def edit_blog(request, blog_id):
                 messages.error(request, "Something went wrong")
         else:
             print(form.errors)
-            messages.error(request, "Please correct the errors below.")
+            error_message = "Failed to add the Offer! Please correct the following errors: {}".format(
+                form.errors
+            )
+            messages.error(request, error_message)
 
     else:
         form = BlogForm(instance=blog)
@@ -867,6 +889,7 @@ def edit_blog(request, blog_id):
     return render(request, "admin/edit_blog.html", context)
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def admin_request(request):
     return_reqs = ReturnedProduct.objects.all()
     if request.method == "POST":

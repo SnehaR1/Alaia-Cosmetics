@@ -165,13 +165,22 @@
     }
   });
   {% elif filter_type == 'weekly' %}
+  const sortedData = {{ week_labels|safe }}.map((label, index) => ({
+    label,
+    value: {{ total_weekly_orders|safe }}[index]
+  })).sort((a, b) => {
+    const weekA = parseInt(a.label.split(' ')[1]);
+    const weekB = parseInt(b.label.split(' ')[1]);
+    return weekA - weekB;
+  });
+
   new Chart(ctx, {
     ...commonOptions,
     data: {
-      labels: {{ week_labels|safe }},
+      labels: sortedData.map(item => item.label),
       datasets: [{
         label: 'Orders',
-        data: {{ total_weekly_orders|safe }},
+        data: sortedData.map(item => item.value),
         borderWidth: 1
       }]
     }

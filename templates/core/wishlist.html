@@ -50,8 +50,8 @@
                                       
                                     </div>
                                 </td>
-                                <td class="py-4">{{ item.product_variant.product.title}} {{item.product_variant.color}} {{item.product_variant.quantity}}</td>
-                                <td class="py-4">{%if item.product_variant.price %}₹{{ item.product_variant.price }} {%else%}₹{{item.product_variant.old_price}}{%endif%} </td>
+                                <td class="py-4">{{ item.product_variant.product.title}} {{item.product_variant.color}} {{item.product_variant.quantity.name}}{{item.product_variant.quantity.unit}}</td>
+                                <td class="py-4">{%if item.product_variant.offer_price %}₹{{ item.product_variant.offer_price }} {%else%}₹{{item.product_variant.old_price}}{%endif%} </td>
                                 <td class="py-4">
                                     {% if item.product_variant.stock < 5 %}
                                     <span class="text-red-500">Low stock</span>

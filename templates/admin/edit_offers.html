@@ -32,16 +32,14 @@
   </div>
   <div class="mb-6">
     <label for="{{ form.product.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product</label>
-    {% render_field form.product class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Product" %}
+    {% render_field form.product class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
 </div>
 
-
- 
-
-  <div class="mb-6 flex">
+<div class="mb-6 flex">
     <label for="{{ form.category.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
-    {% render_field form.category class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"  placeholder="Category" %}
-  </div>
+    {% render_field form.category class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" %}
+</div>
+
   <div class="mb-6">
     <label for="{{ form.valid_from.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Valid From</label>
     {% render_field form.valid_from class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="YYYY-MM-DD HH:MM " %}

@@ -2,11 +2,29 @@
 {% load static %}
 {% load widget_tweaks %}
 {% block content %}
+
+
+
+
+
 <div class="bg-blue-100">
   <div class="container mx-auto px-6 py-10">
     <h1 class="text-3xl font-bold text-gray-800 mb-8">THANK YOU</h1>
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Your order is confirmed</h2>
-
+    {% if messages %}
+    {% for message in messages %}
+    {% if message.tags == "success" %}
+    <div class="w-3/4 ml-72 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+      {{message}}
+    </div>
+    {% else %}
+    <div class="w-3/4 ml-72 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+      <strong>Error! </strong>{{message}}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    
     {% comment %} <div class="w-full md:w-1/2 border shadow mb-6">
       <h3 class="font-bold">Order Information</h3>
       <p>Order number: {{ latest_order.id }}</p>
@@ -34,26 +52,24 @@
       <hr class="mt-4 mb-8" />
     </div>
     <div class="flex flex-wrap my-5 grid grid-cols-2 md:grid-cols-3 gap-4">
+      <ul class="list-disc ml-4">
+        <li>
+          <p>Order number: {{ latest_order.id }}</p>
+        </li>
+        <li>
+          <p>Date: {{ latest_order.created_at }}</p>
+        </li>
+       
       {% for order_item in orderitems %}
-        <ul class="list-disc ml-4">
-          <li>
-            <p>Order number: {{ latest_order.id }}</p>
+      <li>
+         
+              
+              {{ order_item.product.title }}{%if order_item.price.color%}-{{order_item.price.color}}{%endif%}- Quantity: {{ order_item.quantity.name}}{{order_item.quantity.unit}} - {%if order_item.price.offer_price%}Price: ₹{{ order_item.price.offer_price }}{%else%}Price: ₹{{ order_item.price.old_price }}{%endif%}
+         
           </li>
-          <li>
-            <p>Date: {{ latest_order.created_at }}</p>
-          </li>
-          <li>
-            {% if order_item.product.product_variant %}
-              {{ order_item.product.product_variant.title }} {{order_item.product.color}}- Quantity: {{ order_item.quantity }} - Price: ₹{{ order_item.price }}
-              {% if order_item.product.product_variant.status %}
-                - Status: {{ order_item.product.product_variant.status }}
-              {% endif %}
-            {% else %}
-              {{ order_item.product.title }} - Quantity: {{ order_item.quantity }} - {%if order_item.price.price%}Price: ₹{{ order_item.price.price }}{%else%}Price: ₹{{ order_item.price.old_price }}{%endif%}
-            {% endif %}
-          </li>
+          {% endfor %}
         </ul>
-      {% endfor %}
+     
     </div>
   </div>
   
@@ -63,7 +79,7 @@
       <hr class="mt-4 mb-8" />
     </div>
     <div class="flex flex-wrap my-5 grid grid-cols-2 md:grid-cols-3 gap-4">
-      {% for order_item in orderitems %}
+
         <ul class="list-disc ml-4">
           <li>
             <h3 class="font-bold"> Name : {{ latest_order.shipping_address.name}}</h3>
@@ -81,7 +97,7 @@
             <b><p>Total :</b> ₹{{ latest_order.total_price }}</p>
           </li>
         </ul>
-      {% endfor %}
+  
     </div>
   </div>
   

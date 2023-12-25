@@ -54,6 +54,10 @@ class AddProduct(forms.ModelForm):
 
 
 class ProductVariantForm(forms.ModelForm):
+    UNIT_CHOICES = [
+        ("ml", "ml"),
+        ("g", "g"),
+    ]
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
         to_field_name="title",
@@ -70,9 +74,15 @@ class ProductVariantForm(forms.ModelForm):
     quantity = forms.ModelChoiceField(
         queryset=Quantity.objects.all(),
         to_field_name="name",
-        required=True,
+        required=False,
     )
-    new_quantity = forms.CharField(max_length=50, required=True)
+    new_quantity = forms.DecimalField(required=False)
+
+    unit = forms.ChoiceField(
+        choices=UNIT_CHOICES,
+        widget=forms.Select(attrs={"class": "select2"}),
+        required=False,
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -83,7 +93,15 @@ class ProductVariantForm(forms.ModelForm):
 
     class Meta:
         model = ProductVariant
-        fields = ["product", "color", "quantity", "image", "old_price", "stock"]
+        fields = [
+            "product",
+            "color",
+            "quantity",
+            "unit",
+            "image",
+            "old_price",
+            "stock",
+        ]
 
 
 class ProductImagesForm(forms.ModelForm):
@@ -160,6 +178,19 @@ class OffersForm(forms.ModelForm):
         to_field_name="title",
         required=False,
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get("product")
+        category = cleaned_data.get("category")
+
+        if not product and not category:
+            raise forms.ValidationError(
+                "Either 'product' or 'category' must be provided."
+            )
+
+        return cleaned_data
+
     widgets = {
         "valid_from": forms.DateTimeInput(attrs={"placeholder": "YYYY-MM-DD HH:MM "}),
         "valid_to": forms.DateTimeInput(attrs={"placeholder": "YYYY-MM-DD HH:MM "}),

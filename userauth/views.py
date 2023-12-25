@@ -1,5 +1,7 @@
 from pyotp import TOTP
-import paypalrestsdk
+
+from django.db.models.functions import Coalesce
+
 from userauth.models import CustomUser, Userprofile
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -75,58 +77,6 @@ from django.core.mail import EmailMessage
 from django.db import IntegrityError
 from django.db.models import Value, IntegerField
 from django.db.models import Subquery, OuterRef
-
-paypalrestsdk.configure(
-    {
-        "mode": "sandbox",
-        "client_id": "AUBlmfAZUuaAzqsla8EKv764JTkJCciGvfexs1-wEgtsdrD1iSYuOdPOy-KQb3yPJLUoQqecAgRlBOjr",
-        "client_secret": "EFoS8LslWs0qzPg5M_ka3ya4tmnlo8WyMrYAPMoG9gWNgZ02IhDvqYsRGX8hrn_2hif0cs9fs5GeSkni",
-    }
-)
-
-# def signup_view(request):
-#     disc_applied=False
-#     if request.method == "POST":
-#         form = UserRegisterForm(request.POST)
-#         if form.is_valid():
-
-#             new_user=request.user
-#             referral_code=form.cleaned_data['referral_code']
-#             referral=Referral.objects.get(referral_code=referral_code)
-#             if referral:
-#                 # disc_applied=apply_ref_discount(referral_code,new_user)
-#                 request.session['referral_code'] = referral_code
-
-#             else:
-#                 form = UserRegisterForm(instance=new_user)
-
-#                 context = {'form': form}
-#                 messages.error("Referral Code is Invalid!!!")
-#                 return render(request, "signup.html", context)
-#             user_data = form.cleaned_data
-#             request.session['user_data'] = user_data
-
-#             otp = generate_otp()
-#             request.session['otp'] = otp
-#             if otp is None:
-#                 messages.error(request, 'There was an error generating the OTP. Please try again.')
-#                 return render(request, "signup.html", {'form': form})
-
-#             send_mail(
-#                 'OTP Verification Code',
-#                 f'Verify Your Mail By The OTP: \n {otp}',
-#                 settings.EMAIL_HOST_USER,
-#                 [user_data['email']],
-#                 fail_silently=True,
-#             )
-
-#             request.session['flow'] = 'signup'
-#             return redirect('email_otp')
-#     else:
-#         form = UserRegisterForm()
-
-#     context = {'form': form}
-#     return render(request, "signup.html", context)
 
 
 def signup_view(request):
@@ -242,14 +192,12 @@ def email_otp(request):
                         user_profile.phone_number = user_data["phone_number"]
                         user_profile.save()
 
-                    messages.success(request, "Account created and verified.")
+                    success_message = "Account created and verified."
                     if referral_code:
                         disc_applied = apply_ref_discount(referral_code, user)
                         if disc_applied:
-                            messages.success(
-                                request,
-                                "Referral Code Applied Successfully!You have credited Rs 200 in your Wallet!",
-                            )
+                            success_message += " Referral Code Applied Successfully! You have credited Rs 200 in your Wallet."
+                    messages.success(request, success_message)
                     login(request, user)
                     return redirect("login_view")
 
@@ -340,10 +288,10 @@ def generate_otp(user=None):
 @login_required(login_url="/login/")
 def home(request):
     offer = Offers.objects.filter(active=True).first()
-    product_variants = ProductVariant.objects.filter(is_listed=True)[:6]
+    product_variants = ProductVariant.objects.filter(is_listed=True)
     products = Product.objects.filter(
         product_variants__in=product_variants, is_listed=True
-    ).distinct()
+    ).distinct()[:4]
     return render(
         request,
         "core/home.html",
@@ -353,9 +301,9 @@ def home(request):
 
 @login_required(login_url="/login/")
 def shop(request, category_title=None, brand_title=None):
-    product_variants = ProductVariant.objects.filter(is_listed=True)
+    product_variants = ProductVariant.objects.filter(is_listed=True).order_by("-date")
     products = Product.objects.filter(
-        product_variants__in=product_variants,
+        Q(product_variants__is_listed=True) | Q(product_variants=None),
         is_listed=True,
         brand__is_listed=True,
         category__is_listed=True,
@@ -363,6 +311,7 @@ def shop(request, category_title=None, brand_title=None):
     categories = Category.objects.filter(is_listed=True)
     brands = Brand.objects.filter(is_listed=True)
     active_offers = Offers.objects.filter(active=True)
+    print(active_offers)
     old_price_displayed = {}
 
     discounted_price = 0
@@ -388,107 +337,141 @@ def shop(request, category_title=None, brand_title=None):
 
     if category_title:
         category = get_object_or_404(Category, title=category_title)
-        products = products.filter(category=category)
+        brands = brands.filter(product_set__category=category)
+        product_variants = product_variants.filter(product__category=category)
+
     if brand_title:
         brand = get_object_or_404(Brand, title=brand_title)
-        products = products.filter(brand=brand)
-
+        categories = categories.filter(product_set__brand=brand)
+        product_variants = product_variants.filter(product__brand=brand)
+    if category_title and brand_title:
+        # Use Q objects to filter based on both category and brand
+        product_variants = product_variants.filter(
+            product__category=category, product__brand=brand
+        )
     query = request.GET.get("search", "")
 
     if query:
-        products = products.filter(
-            Q(title__icontains=query)
-            | Q(brand__title__icontains=query)
-            | Q(category__title__icontains=query)
+        product_variants = product_variants.filter(
+            Q(product__title__icontains=query)
+            | Q(product__brand__title__icontains=query)
+            | Q(product__category__title__icontains=query)
         )
 
     sort_by = request.GET.get("sort_by", "default")
 
     if sort_by == "price_low":
-        products = products.annotate(
-            product_offer_price=Subquery(
-                Offers.objects.filter(
-                    product=OuterRef("product_variants__product"),
-                    valid_from__lte=timezone.now(),
-                    valid_to__gte=timezone.now(),
-                    active=True,
-                ).values("price")[:1]
-            ),
-            category_offer_price=Subquery(
-                Offers.objects.filter(
-                    category=OuterRef("category"),
-                    valid_from__lte=timezone.now(),
-                    valid_to__gte=timezone.now(),
-                    active=True,
-                ).values("price")[:1]
-            ),
-            effective_price=Case(
-                When(
-                    Q(product_offer_price__isnull=False), then=F("product_offer_price")
-                ),
-                When(
-                    Q(category_offer_price__isnull=False),
-                    then=F("category_offer_price"),
-                ),
-                default=F("product_variants__old_price"),
-                output_field=DecimalField(),
-            ),
-        ).order_by("effective_price")
+        if category_title or brand_title:
+            product_variants = (
+                ProductVariant.objects.filter(
+                    Q(offer_price__isnull=False) | Q(old_price__isnull=False),
+                    Q(product__category=category) | Q(product__brand=brand),
+                )
+                .annotate(
+                    effective_price=Case(
+                        When(offer_price__isnull=False, then=F("offer_price")),
+                        default=F("old_price"),
+                        # Change the output_field as per your field type
+                    )
+                )
+                .order_by("effective_price")
+            )
+        else:
+            product_variants = (
+                ProductVariant.objects.filter(
+                    Q(offer_price__isnull=False) | Q(old_price__isnull=False)
+                )
+                .annotate(
+                    effective_price=Case(
+                        When(offer_price__isnull=False, then=F("offer_price")),
+                        default=F("old_price"),
+                        # Change the output_field as per your field type
+                    )
+                )
+                .order_by("effective_price")
+            )
+
     elif sort_by == "price_high":
-        products = products.annotate(
-            product_offer_price=Subquery(
-                Offers.objects.filter(
-                    product=OuterRef("product_variants__product"),
-                    valid_from__lte=timezone.now(),
-                    valid_to__gte=timezone.now(),
-                    active=True,
-                ).values("price")[:1]
-            ),
-            category_offer_price=Subquery(
-                Offers.objects.filter(
-                    category=OuterRef("category"),
-                    valid_from__lte=timezone.now(),
-                    valid_to__gte=timezone.now(),
-                    active=True,
-                ).values("price")[:1]
-            ),
-            effective_price=Case(
-                When(
-                    Q(product_offer_price__isnull=False), then=F("product_offer_price")
-                ),
-                When(
-                    Q(category_offer_price__isnull=False),
-                    then=F("category_offer_price"),
-                ),
-                default=F("product_variants__old_price"),
-                output_field=DecimalField(),
-            ),
-        ).order_by("-effective_price")
+        if category_title or brand_title:
+            product_variants = (
+                ProductVariant.objects.filter(
+                    Q(offer_price__isnull=False) | Q(old_price__isnull=False),
+                    Q(product__category=category) | Q(product__brand=brand),
+                )
+                .annotate(
+                    effective_price=Case(
+                        When(offer_price__isnull=False, then=F("offer_price")),
+                        default=F("old_price"),
+                    )
+                )
+                .order_by("-effective_price")
+            )
+        else:
+            product_variants = (
+                ProductVariant.objects.filter(
+                    Q(offer_price__isnull=False) | Q(old_price__isnull=False)
+                )
+                .annotate(
+                    effective_price=Case(
+                        When(offer_price__isnull=False, then=F("offer_price")),
+                        default=F("old_price"),
+                        # Change the output_field as per your field type
+                    )
+                )
+                .order_by("-effective_price")
+            )
     elif sort_by == "discount_high":
-        products = products.annotate(
+        product_variants = product_variants.annotate(
             effective_discount=Case(
-                When(offers__isnull=False, then=F("offers__discount_percentage")),
                 When(
-                    category__offers__isnull=False,
-                    then=F("category__offers__discount_percentage"),
+                    product__offers__isnull=False,
+                    then=F("product__offers__discount_percentage"),
+                ),
+                When(
+                    product__category__offers__isnull=False,
+                    then=F("product__category__offers__discount_percentage"),
                 ),
                 default=Value(0),
                 output_field=IntegerField(),
             )
         ).order_by("-effective_discount")
+
     elif sort_by == "discount_low":
-        products = products.annotate(
+        product_variants = product_variants.annotate(
             effective_discount=Case(
-                When(offers__isnull=False, then=F("offers__discount_percentage")),
                 When(
-                    category__offers__isnull=False,
-                    then=F("category__offers__discount_percentage"),
+                    product__offers__isnull=False,
+                    then=F("product__offers__discount_percentage"),
+                ),
+                When(
+                    product__category__offers__isnull=False,
+                    then=F("product__category__offers__discount_percentage"),
                 ),
                 default=Value(0),
                 output_field=IntegerField(),
             )
         ).order_by("effective_discount")
+    # if sort_by == "price_low":
+    #     products = products.order_by(
+    #         "product_variants__offer_price", "product_variants__old_price"
+    #     )
 
+    # elif sort_by == "price_high":
+    #     products = products.order_by(
+    #         "-product_variants__offer_price", "-product_variants__old_price"
+    #     )
+
+    # elif sort_by == "discount_high":
+    #     products = products.order_by(
+    #         "-product_variants__product__offers__discount_percentage",
+    #         "-product_variants__product__category__offers__discount_percentage",
+    #     )
+
+    # elif sort_by == "discount_low":
+    #     products = products.order_by(
+    #         "product_variants__product__offers__discount_percentage",
+    #         "product_variants__product__category__offers__discount_percentage",
+    #     )
     context = {
         "products": products,
         "categories": categories,
@@ -498,11 +481,14 @@ def shop(request, category_title=None, brand_title=None):
         "active_offers": active_offers,
         "discounted_price": discounted_price,
         "old_price_displayed": old_price_displayed,
+        "brand_title": brand_title,
+        "category_title": category_title,
     }
 
     return render(request, "core/shop.html", context)
 
 
+@login_required(login_url="/login/")
 def product_details(request, pv_id):
     try:
         product = get_object_or_404(ProductVariant, pk=pv_id)
@@ -511,6 +497,16 @@ def product_details(request, pv_id):
         main_p = Product.objects.all()
         reviews = ProductReview.objects.filter(product_variant_id=pv_id)
         form = ProductReviewForm()
+        same_clr_products = ProductVariant.objects.filter(
+            product=product.product, color=product.color
+        )
+        dif_clr_products = ProductVariant.objects.filter(
+            quantity=product.quantity
+        ).distinct()
+        quantities = same_clr_products.values_list(
+            "quantity__name", "quantity__unit"
+        ).distinct()
+
         product_offer = Offers.objects.filter(product=product.product).first()
         category_offer = Offers.objects.filter(
             category=product.product.category
@@ -544,6 +540,9 @@ def product_details(request, pv_id):
             "reviews": reviews,
             "product_offer": product_offer,
             "category_offer": category_offer,
+            "quantities": quantities,
+            "same_clr_products": same_clr_products,
+            "dif_clr_products": dif_clr_products,
         }
 
         return render(request, "core/product_details.html", context)
@@ -658,11 +657,22 @@ def view_cart(request):
     cart_count = len(cart_order.cartorderitems_set.all())
     product_offer = None
     category_offer = None
+
     for item in cart_items:
         product = item.price.product
         product_offer = Offers.objects.filter(product=product).first()
         category = item.price.product.category
         category_offer = Offers.objects.filter(category=category).first()
+        if item.price.stock != 0:
+            if item.quantity > item.price.stock:
+                item.quantity = item.price.stock
+                item.save()
+        else:
+            messages.error(
+                request,
+                f"{item.price.product.title} is out of stock and has been removed from your cart.",
+            )
+            item.delete()
 
     request.session["cart_count"] = cart_count
     print(cart_count)
@@ -741,6 +751,7 @@ def user_dashboard(request):
     )
 
 
+@login_required(login_url="/login/")
 def address(request):
     user = request.user
     addresses = Address.objects.filter(user=user)
@@ -811,6 +822,7 @@ def get_cart_count(request):
     return JsonResponse({"cart_count": cart_count})
 
 
+@login_required(login_url="/login/")
 def checkout(request):
     user = request.user
     addresses = Address.objects.filter(user=user)
@@ -977,6 +989,7 @@ def checkout(request):
     )
 
 
+@login_required(login_url="/login/")
 def razorpay_view(request):
     user = request.user
     addresses = Address.objects.filter(user=user)
@@ -1002,7 +1015,6 @@ def razorpay_view(request):
 
 
 def razorpay_done(request):
-    # Assuming you have captured the selected address in the session or elsewhere
     selected_address_id = request.session.get("selected_address_id")
     selected_address = get_object_or_404(Address, pk=selected_address_id)
 
@@ -1012,7 +1024,6 @@ def razorpay_done(request):
         item.calculate_total() for item in cart_order.cartorderitems_set.all()
     )
 
-    # Execute the checkout logic
     order = Order.objects.create(
         user=user,
         shipping_address=selected_address,
@@ -1022,6 +1033,13 @@ def razorpay_done(request):
     )
 
     order.save()
+    for item in cart_order.cartorderitems_set.all():
+        OrderItem.objects.create(
+            order=order,
+            product=item.price.product,
+            quantity=item.quantity,
+            price=item.price,
+        )
 
     cart_order.delete()
 
@@ -1076,8 +1094,9 @@ def order_confirmation(request):
     )
 
 
+@login_required(login_url="/login/")
 def orders_view(request):
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).order_by("-created_at")
     order_ids = [str(order.id) for order in orders]
     orderitems = OrderItem.objects.filter(oid__in=order_ids)
 
@@ -1137,7 +1156,7 @@ def cancel_order(request, order_id):
         order.status = "Cancelled"
         order.save()
         total_refund_amount = sum(
-            item.price.price if item.price.price else item.price.old_price
+            item.price.offer_price if item.price.offer_price else item.price.old_price
             for item in order.order_item.all()
         )
         user_wallet, created = Wallet.objects.get_or_create(
@@ -1220,13 +1239,13 @@ def add_wishlist(request, pv_id):
 
 def wishlist(request):
     user = request.user
-    wishlist = Wishlist.objects.filter(user=user)
+    wishlist = Wishlist.objects.filter(user=user).order_by("-date")
 
     return render(request, "core/wishlist.html", {"wishlist": wishlist})
 
 
 def del_wishlist(request, pv_id):
-    wishlist = get_object_or_404(Wishlist, product_variant__id=pv_id)
+    wishlist = Wishlist.objects.filter(product_variant__id=pv_id)
     wishlist.delete()
     return redirect("wishlist")
 
@@ -1273,14 +1292,16 @@ def generate_ref_code(request):
                     return redirect("user_dashboard")
 
         except Referral.DoesNotExist:
-            referral_code = ref_code()
-            referral = Referral.objects.create(
-                referral_code=referral_code, referred_user=user, discount_amount=200
-            )
-            request.session["referral_code"] = referral_code
-            return redirect("user_dashboard")
+            pass  # Do nothing if Referral.DoesNotExist is raised
 
-        request.session["referral_code"] = ref.referral_code
+        # Move this block outside of the try-except block
+        referral_code = ref_code()
+        referral = Referral.objects.create(
+            referral_code=referral_code, referred_user=user, discount_amount=200
+        )
+        request.session["referral_code"] = referral_code
+        return redirect("user_dashboard")
+
     else:
         referral_code = None
 
@@ -1292,15 +1313,18 @@ def ref_code():
     return code
 
 
+@login_required(login_url="/login/")
 def about_us(request):
     return render(request, "core/about_us.html")
 
 
+@login_required(login_url="/login/")
 def blog(request):
-    blogs = Blogs.objects.all()
+    blogs = Blogs.objects.all().order_by("-date")
     return render(request, "core/blog.html", {"blogs": blogs})
 
 
+@login_required(login_url="/login/")
 def blog_page(request, blog_id):
     blog = get_object_or_404(Blogs, id=blog_id)
     blog_images = blog.additional_images.all()
@@ -1309,6 +1333,7 @@ def blog_page(request, blog_id):
     )
 
 
+@login_required(login_url="/login/")
 def contact_us(request):
     if request.method == "POST":
         form = ContactUsForm(request.POST)

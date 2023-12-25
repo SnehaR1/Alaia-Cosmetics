@@ -46,48 +46,37 @@
      </div>
      <!-- card right -->
    
-     <div class = "product-content mt-12 ">
-       <h2 class = "product-title ">{{product.product.title}}-{{product.color}}-{{product.quantity}}</h2>
-       <a href = "#" class = "product-link">{{product.brand.title}}</a>
-       {% comment %} <div class = "product-rating flex">
-        <svg aria-hidden="true" class="h-5 w-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-        <svg aria-hidden="true" class="h-5 w-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-        <svg aria-hidden="true" class="h-5 w-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-        <svg aria-hidden="true" class="h-5 w-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-        <svg aria-hidden="true" class="h-5 w-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-        <span class="mr-2 ml-3 rounded bg-yellow-200 px-2.5 py-0.5 text-xs font-semibold">5.0</span>
-       </div> {% endcomment %}
+     <div class = "product-content mt-56">
+       <h2 class = "product-title ">{{product.product.title}}{%if product.color%}-{{product.color}}{%endif%}-{{product.quantity.name}}{{product.quantity.unit}}</h2>
+       <a href = "#" class = "product-link">{{product.product.brand.title}}</a>
+       <p <p class="bg-red-400 text-white font-bold flex items-center justify-center">
+        {% if product_offer %}{{ product_offer.name }}{% endif %}
+      </p>
+      
  
-       <div class = "product-price">
-        {% if product_offer %}
+       <div class = "product-price ">
+        {% if product.offer_price %}
+    
          <p class = "last-price">Old Price: <span>₹{{product.old_price}}</span></p>
-         <p class = "new-price">New Price: <span>₹{{product_offer.price}}</span></p> 
-         {%elif category_offer %}
-         <p class = "last-price">Old Price: <span>₹{{product.old_price}}</span></p>
-         <p class = "new-price">New Price: <span>₹{{category_offer.price}}</span></p> 
+         <p class = "new-price">New Price: <span>₹{{product.offer_price }}</span></p> 
          {%else%}
          <p class = "new-price">Price: <span>₹{{product.old_price}}</span></p>
          {%endif%}
       
          {%if product.color%}
          <p class="my-4">Available shades : </p>
-         {% for variant in product.product.product_variants.all %}
-         <button class="border rounded-xl bg-black text-white p-3"><a href="{% url 'product_details' variant.pk %}">{{ variant.color.name }}</a></button>
+         {% for product in dif_clr_products %}
+         <button class="border rounded-xl bg-black text-white p-3"><a href="{% url 'product_details' product.pk %}">{{ product.color.name }}</a></button>
        {% endfor %}
        {%else%}{%endif%}
-       </div>
-   
+       <p class="my-4">Available Quantities : </p>
+       {%for product in same_clr_products%}
+       <button class="border rounded-xl bg-black text-white p-3"><a href="{% url 'product_details' product.pk %}"> {{product.quantity.name}}{{product.quantity.unit}}</a></button>
+       {%endfor%}
       
+       </div>
+      
+       <div class="max-h-96 overflow-y-auto">
 <div id="accordion-collapse" data-accordion="collapse" >
   <h2 id="accordion-collapse-heading-2">
     <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" data-accordion-target="#accordion-collapse-body-3" aria-expanded="false" aria-controls="accordion-collapse-body-3">
@@ -105,7 +94,7 @@
     </div>
   </div>
 </div>
-
+</div>
 
        <div class = "purchase-info flex flex-wrap">
          {% comment %} <input type = "number" min = "0" value = "1"> {% endcomment %}
@@ -138,7 +127,7 @@
   
 </div>
 
-<div class="ml-6 mt-24">
+<div class="ml-6 mt-56">
 {%if reviews%}  <h1 class="text-xl font-bold">Reviews</h1>{%else%}<h1 class="text-xl font-bold">No Reviews</h1>{%endif%}
   {%for review in reviews%}
   <article class="p-6 text-base bg-black-100 rounded-lg dark:bg-gray-900 shadow mt-3 border">
