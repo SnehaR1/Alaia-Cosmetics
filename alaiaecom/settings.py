@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import razorpay
-from decouple import config 
+from decouple import config
 from pathlib import Path
 
 
@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-8ve+5kp(+%!tejwfjbul1tl09tieht9zu#p8dkk19-hi!i@2q5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -42,18 +42,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-  
-    #Custom apps
+    # Custom apps
     "userauth",
     "adminapp",
     "widget_tweaks",
-    
     "rest_framework",
-    
     "multiupload",
     "chartjs",
     "paypal.standard.ipn",
-  
 ]
 
 MIDDLEWARE = [
@@ -65,8 +61,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "adminapp.middleware.DisableBrowserCacheMiddleware",
-
- 
 ]
 
 ROOT_URLCONF = "alaiaecom.urls"
@@ -74,7 +68,7 @@ ROOT_URLCONF = "alaiaecom.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR,"templates")],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -94,18 +88,26 @@ WSGI_APPLICATION = "alaiaecom.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "alaiadb",
+#         "USER":"alaia",
+#         "PASSWORD":"Hello@123",
+#         "HOST":"localhost",
+#         "PORT":"5432",
+#     }
+# }
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "alaiadb",
-        "USER":"alaia",
-        "PASSWORD":"Hello@123",
-        "HOST":"localhost",
-        "PORT":"5432",
+        "USER": "alaia",
+        "PASSWORD": "Rambootan99",
+        "HOST": "alaiadb.c980au0864ra.eu-north-1.rds.amazonaws.com",
+        "PORT": "5432",
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -142,53 +144,48 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "/static/"
-#Added by me
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Added by me
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, "static"),
 ]
 
 
-MEDIA_URL="/media/"
-MEDIA_ROOT=os.path.join(BASE_DIR,"media")
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-#added by me
-AUTH_USER_MODEL="userauth.CustomUser"
+# added by me
+AUTH_USER_MODEL = "userauth.CustomUser"
 
-#jazzmin
+# jazzmin
 JAZZMIN_SETTINGS = {
-    'theme': 'default',
-    'layout': 'horizontal',
-    'sidebar_collapse': False,
-    'site_title': 'My Django Admin',
-    'site_header': 'My Django Admin',
-    'site_icon': 'my_site_icon.png',
+    "theme": "default",
+    "layout": "horizontal",
+    "sidebar_collapse": False,
+    "site_title": "My Django Admin",
+    "site_header": "My Django Admin",
+    "site_icon": "my_site_icon.png",
 }
 
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER ='sneharavindranathan@gmail.com'
-EMAIL_HOST_PASSWORD ='htmo tyow weis yrfr'
+EMAIL_HOST_USER = "sneharavindranathan@gmail.com"
+EMAIL_HOST_PASSWORD = "htmo tyow weis yrfr"
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_AGE = 1209600
 
-PAYPAL_RECEIVER_EMAIL=""
-PAYPAL_TEST=True
+PAYPAL_RECEIVER_EMAIL = ""
+PAYPAL_TEST = True
 
-RAZORPAY_API_KEY = 'rzp_test_YnJ9v2rxFkA28x'
-RAZORPAY_API_SECRET = '1NJjlqDWoBUci4hN8V8lCOiJ'
+RAZORPAY_API_KEY = "rzp_test_YnJ9v2rxFkA28x"
+RAZORPAY_API_SECRET = "1NJjlqDWoBUci4hN8V8lCOiJ"
 RAZORPAY_CLIENT = razorpay.Client(auth=(RAZORPAY_API_KEY, RAZORPAY_API_SECRET))
-
-
-
-

@@ -19,6 +19,7 @@
 {% endfor %}
 {% endif %}
 
+
 <div class="relative flex h-1/4 w-full bg-cover bg-center items-center" style="background-image: url('{% static "images\backgrounds\Home_bg_2.png" %}'); background-size: cover;">
 
   <div class="ml-12 text-white font-bold ">
@@ -37,9 +38,8 @@
       </div>
     </div>
   </div>
-
+  {%endif%}
 </div>
-{%endif%}
 
 <div class="flex justify-center items-center">
 
@@ -147,6 +147,7 @@
 </div>
 </div>
 </div>
+
 <div class="flex justify-center items-center">
 
   <div class="2xl:mx-auto 2xl:container py-12 px-4 sm:px-6 xl:px-20 2xl:px-0 w-full">
@@ -180,12 +181,7 @@
            <button class="dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 bottom-4 z-10 absolute text-base font-medium leading-none text-gray-800 py-3 w-36 bg-white"><a href="{% url 'shop_category' category_title='Eyes' %}">Eyes</a></button>
           <div class="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50"></div>
         </div>
-        <div class="relative group flex justify-center items-center h-full w-full mt-4 md:hidden md:mt-8 lg:hidden">
-          <img class="object-center object-cover h-full w-full hidden md:block" src="https://i.ibb.co/6FjW19n/olive-tatiane-Im-Ez-F9-B91-Mk-unsplash-2.png" alt="girl-image" />
-          <img class="object-center object-cover h-full w-full md:hidden" src="https://i.ibb.co/sQgHwHn/olive-tatiane-Im-Ez-F9-B91-Mk-unsplash-1.png" alt="olive-tatiane-Im-Ez-F9-B91-Mk-unsplash-2" />
-           <button class="dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 bottom-4 z-10 absolute text-base font-medium leading-none text-gray-800 py-3 w-36 bg-white"><a href="{% url 'shop_category' category_title='Eyes' %}">Accessories</a></button>
-          <div class="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50"></div>
-        </div>
+       
       </div>
       {% comment %} <div class="relative group hidden md:flex justify-center items-center h-full w-full mt-4 md:mt-8 lg:hidden">
         <img class="object-center object-cover h-full w-full hidden md:block" src="https://i.ibb.co/6FjW19n/olive-tatiane-Im-Ez-F9-B91-Mk-unsplash-2.png" alt="girl-image" />
@@ -208,23 +204,22 @@
       <a href="{% url 'shop_brand' brand_title='Faces Canada' %}" class="flex justify-center items-center">
         <img src="{% static "\images\backgrounds\FACES CANADA.png" %}">                                              
       </a>
-      <a href="{% url 'shop_brand' brand_title=' M.A.C' %}" class="flex justify-center items-center">
+      <a href="{% url 'shop_brand' brand_title='M.A.C' %}" class="flex justify-center items-center">
         <img src="{% static "\images\backgrounds\m.a.c" %}">                                                                 
       </a>
 
-      <a href="{% url 'shop_brand' brand_title=' Paese Cosmetics' %}" class="flex justify-center items-center">
+      <a href="{% url 'shop_brand' brand_title='Paese Cosmetics' %}" class="flex justify-center items-center">
         <img src="{% static "\images\backgrounds\PEASE.png" %}">                                                                                      
       </a>
       <a href="{% url 'shop_brand' brand_title='Lakme' %}" class="flex justify-center items-center">
         <img src="{% static "\images\backgrounds\LAKME LOGO.png" %}">                                                                        
       </a>
-      <a href="{% url 'shop_brand' brand_title=" L'Oreal Paris" %}" class="flex justify-center items-center">
+      <a href="{% url 'shop_brand' brand_title="L'Oreal Paris" %}" class="flex justify-center items-center">
         <img src="{% static "\images\backgrounds\lorealparis logo.jpg" %}">                                                                        
       </a>
       </div>
   </div>
 </section>
-
 
 
 {% endblock content %}
