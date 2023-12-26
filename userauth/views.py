@@ -294,7 +294,7 @@ def home(request):
     ).distinct()[:4]
     return render(
         request,
-        "core/home.html",
+        "core/index.html",
         {"products": products, "product_variants": product_variants, "offer": offer},
     )
 
