@@ -180,7 +180,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "sneharavindranathan@gmail.com"
-EMAIL_HOST_PASSWORD = "htmo tyow weis yrfr"
+EMAIL_HOST_PASSWORD = "mwde hvoy orul fozv"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 1209600

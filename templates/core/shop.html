@@ -32,7 +32,7 @@
           <ul class="py-2 text-sm text-gray-700" aria-labelledby="dropdownDefaultButton">
               {% for brand in brands %}
                   <li>
-                      <a href="{% url 'shop_brand' brand_title=brand.title %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{ brand.title }}</a>
+                      <a href="{% if category_title %}{% url 'brand_category' category_title=category_title brand_title=brand.title %}{%else%}{% url 'shop_brand' brand_title=brand.title %}{%endif%}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{ brand.title }}</a>
                   </li>
               {% endfor %}
           </ul>

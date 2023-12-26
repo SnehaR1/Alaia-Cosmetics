@@ -62,7 +62,7 @@
               <td>
                 <form
                   method="POST"
-                  action="{% if order.id %}{% url 'cancel_order' order_id=order.id %}{% endif %}"
+                  action="{% if order.id %}{% url 'cancel_order' order_id=order_item.id %}{% endif %}"
                   id="cancelOrderForm"
                 >
                   {% csrf_token %}

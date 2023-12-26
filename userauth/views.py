@@ -1150,44 +1150,47 @@ def orders_view(request):
 
 
 def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
+    order = get_object_or_404(OrderItem, id=order_id)
 
     if request.method == "POST" and "cancel_order" in request.POST:
         order.status = "Cancelled"
         order.save()
-        total_refund_amount = sum(
-            item.price.offer_price if item.price.offer_price else item.price.old_price
-            for item in order.order_item.all()
+        total_refund_amount = (
+            order.price.offer_price
+            if order.price.offer_price
+            else order.price.old_price
         )
+        # sum(
+        #     item.price.offer_price if item.price.offer_price else item.price.old_price
+        #     for item in order.all()
+        # )
         user_wallet, created = Wallet.objects.get_or_create(
             user=request.user, defaults={"balance": 0}
         )
         user_wallet.balance += total_refund_amount
         user_wallet.save()
 
-        for item in order.order_item.all():
-            item.status = "Cancelled"
-            item.save()
+        # for item in order.order_item.all():
+        #     item.status = "Cancelled"
+        #     item.save()
 
-            product = item.product
-            product_variants = product.product_variants.all()
-            for product_variant in product_variants:
-                product_variant.stock += item.quantity
-                product_variant.save()
+        # product = order.price.product
+        product_variant = order.price
+
+        product_variant.stock += order.quantity
+        product_variant.save()
 
         print(f"Order status updated successfully")
         messages.success(request, "Order cancelled successfully")
         return redirect("orders")
     elif request.method == "POST" and "cancelreq" in request.POST:
-        returned_product = ReturnedProduct.objects.filter(
-            order__order_id=order_id
-        ).first()
+        returned_product = ReturnedProduct.objects.filter(order_id=order_id).first()
         if returned_product:
             order.status = "delivered"
             order.save()
-            for item in order.order_item.all():
-                item.status = "delivered"
-                item.save()
+            # for item in order.order_item.all():
+            #     item.status = "delivered"
+            #     item.save()
             returned_product.delete()
             messages.success(request, "Request Cancelled")
             return redirect("orders")
