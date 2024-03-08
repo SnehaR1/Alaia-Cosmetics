@@ -335,6 +335,8 @@ def shop(request, category_title=None, brand_title=None):
 
     #     discounted_price = offers.new_price()
 
+    brand = None
+
     if category_title:
         category = get_object_or_404(Category, title=category_title)
         brands = brands.filter(product_set__category=category)
@@ -344,11 +346,15 @@ def shop(request, category_title=None, brand_title=None):
         brand = get_object_or_404(Brand, title=brand_title)
         categories = categories.filter(product_set__brand=brand)
         product_variants = product_variants.filter(product__brand=brand)
+
+    # Now, when you reach the section where you're filtering based on both category and brand,
+    # brand will always be defined, even if brand_title was not provided.
     if category_title and brand_title:
         # Use Q objects to filter based on both category and brand
         product_variants = product_variants.filter(
             product__category=category, product__brand=brand
         )
+
     query = request.GET.get("search", "")
 
     if query:
@@ -642,6 +648,7 @@ def add_to_cart(request, pv_id):
     if referer and "product_details" in referer:
         return redirect("product_details", pv_id=pv_id)
     elif referer and "wishlist" in referer:
+        del_wishlist(request, pv_id)
         return redirect("wishlist")
     elif referer and "home" in referer:
         return redirect("home")
@@ -1265,9 +1272,9 @@ def generateinvoice(request, order_id):
     download_html_content = download_template.render(download_context)
     if request.GET.get("download"):
         response = HttpResponse(content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = f'attachment; filename="invoice_{order_id}.pdf"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="invoice_{order_id}.pdf"'
+        )
         pdf_data = pisa.CreatePDF(download_html_content, dest=response)
 
         if pdf_data.err:

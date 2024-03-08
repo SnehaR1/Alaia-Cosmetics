@@ -921,3 +921,7 @@ def admin_request(request):
             return redirect("admin_request")
 
     return render(request, "admin/admin_request.html", {"return_reqs": return_reqs})
+
+
+def custom_404_view(request, exception):
+    return render(request, "404.html", status=404)

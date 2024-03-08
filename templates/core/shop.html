@@ -7,20 +7,21 @@
 
 
 
-<div class="flex items-center justify-center py-4 md:py-8 flex-wrap overflow-hidden">
-<div>
+<div class="flex items-center justify-center py-4 md:py-8 flex-wrap overflow-hidden ml-24">
+<div class="mx-auto" >
   <a href="{% url 'shop' %}">
-      <button type="button" class="text-blue-700 hover:text-white border border-blue-600 bg-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full text-base font-medium px-5 py-2.5 text-center mr-3 mb-3 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:bg-gray-900 dark:focus:ring-blue-800">All</button>
+      <button type="button" class=" mr-32 text-blue-700 hover:text-white border border-blue-600 bg-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full text-base font-medium px-5 py-2.5 text-center mr-3 mb-3 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:bg-gray-900 dark:focus:ring-blue-800">All</button>
   </a>
 
   {% for category in categories %}
+  
       <a href="{% if brand_title %}{% url 'category_brand' category_title=category.title brand_title=brand_title %}{% else %}{% url 'shop_category' category_title=category.title %}{% endif %}">
-          <button type="button" class="text-gray-900 border border-white hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center mr-3 mb-3 dark:text-white dark:focus:ring-gray-800">{{ category.title }}</button>
+          <button type="button" class="text-gray-900 border border-grey-200 mx-4 hover:border-gray-200 dark:border-gray-900 dark:bg-gray-900 dark:hover:border-gray-700 bg-white focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full text-base font-medium px-5 py-2.5 text-center mr-3 mb-3 dark:text-white dark:focus:ring-gray-800">{{ category.title }}</button>
       </a>
   {% endfor %}
     </div>
 
-      <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="fixed right-0 mr-64 text-blue-700 hover:text-white bg-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">Brands
+      <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class=" right-0 mr-64 text-blue-700 hover:text-white bg-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">Brands
           <svg class="w-2.5 h-2.5 ml-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
           </svg>
