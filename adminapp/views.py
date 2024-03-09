@@ -49,6 +49,7 @@ from django.http import HttpResponse
 import openpyxl
 from openpyxl.styles import Font
 from django.core.mail import send_mail
+from datetime import datetime
 
 
 def admin_login(request):
@@ -561,9 +562,13 @@ def edit_variant(request, pv_id):
     return render(request, "admin/edit_variant.html", context)
 
 
+from django.utils import timezone
+
+
 @user_passes_test(lambda u: u.is_superuser)
 def admin_coupon(request):
     coupons = Coupon.objects.all().order_by("valid_to")
+
     return render(request, "admin/admin_coupon.html", {"coupons": coupons})
 
 

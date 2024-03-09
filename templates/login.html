@@ -29,13 +29,13 @@
 <div class="w-3/4 text-white">
   {{ form.email.errors }}
           <label for="{{ form.email.id_for_label }}" class="block font-medium mb-2 text-white">Email:</label>
-          {% render_field form.email class="w-2/5 border p-2 rounded border border-purple-500 bg-purple-100  focus:outline-none focus:border-purple-500 " placeholder="Enter your Email" %}
+          {% render_field form.email class="w-2/5 border p-2 text-black rounded border border-purple-500 bg-purple-100  focus:outline-none focus:border-purple-500 " placeholder="Enter your Email" %}
       </div>
       
      <div class="w-3/4">
         {{ form.password.errors }}
         <label for="{{ form.password.id_for_label }}" class="block font-medium mb-2 text-white">Password:</label>
-        {% render_field form.password class="w-2/5 border p-2 rounded border border-purple-500 bg-purple-100  focus:outline-none focus:border-purple-500" placeholder="Enter your Password"  %}
+        {% render_field form.password class="w-2/5 border p-2 text-black rounded border border-purple-500 bg-purple-100  focus:outline-none focus:border-purple-500" placeholder="Enter your Password"  %}
     </div>  
 
     <div class="w-1/2 flex flex-wrap mr-72">

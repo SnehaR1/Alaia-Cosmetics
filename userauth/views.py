@@ -285,7 +285,7 @@ def generate_otp(user=None):
     return otp
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def home(request):
     offer = Offers.objects.filter(active=True).first()
     product_variants = ProductVariant.objects.filter(is_listed=True)
@@ -299,9 +299,11 @@ def home(request):
     )
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def shop(request, category_title=None, brand_title=None):
-    product_variants = ProductVariant.objects.filter(is_listed=True).order_by("-date")
+    product_variants = ProductVariant.objects.filter(
+        is_listed=True, product__is_listed=True
+    ).order_by("-date")
     products = Product.objects.filter(
         Q(product_variants__is_listed=True) | Q(product_variants=None),
         is_listed=True,
@@ -347,10 +349,8 @@ def shop(request, category_title=None, brand_title=None):
         categories = categories.filter(product_set__brand=brand)
         product_variants = product_variants.filter(product__brand=brand)
 
-    # Now, when you reach the section where you're filtering based on both category and brand,
-    # brand will always be defined, even if brand_title was not provided.
     if category_title and brand_title:
-        # Use Q objects to filter based on both category and brand
+
         product_variants = product_variants.filter(
             product__category=category, product__brand=brand
         )
@@ -457,27 +457,7 @@ def shop(request, category_title=None, brand_title=None):
                 output_field=IntegerField(),
             )
         ).order_by("effective_discount")
-    # if sort_by == "price_low":
-    #     products = products.order_by(
-    #         "product_variants__offer_price", "product_variants__old_price"
-    #     )
 
-    # elif sort_by == "price_high":
-    #     products = products.order_by(
-    #         "-product_variants__offer_price", "-product_variants__old_price"
-    #     )
-
-    # elif sort_by == "discount_high":
-    #     products = products.order_by(
-    #         "-product_variants__product__offers__discount_percentage",
-    #         "-product_variants__product__category__offers__discount_percentage",
-    #     )
-
-    # elif sort_by == "discount_low":
-    #     products = products.order_by(
-    #         "product_variants__product__offers__discount_percentage",
-    #         "product_variants__product__category__offers__discount_percentage",
-    #     )
     context = {
         "products": products,
         "categories": categories,
@@ -494,7 +474,7 @@ def shop(request, category_title=None, brand_title=None):
     return render(request, "core/shop.html", context)
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def product_details(request, pv_id):
     try:
         product = get_object_or_404(ProductVariant, pk=pv_id)
@@ -758,7 +738,7 @@ def user_dashboard(request):
     )
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def address(request):
     user = request.user
     addresses = Address.objects.filter(user=user)
@@ -829,7 +809,7 @@ def get_cart_count(request):
     return JsonResponse({"cart_count": cart_count})
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def checkout(request):
     user = request.user
     addresses = Address.objects.filter(user=user)
@@ -996,7 +976,7 @@ def checkout(request):
     )
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def razorpay_view(request):
     user = request.user
     addresses = Address.objects.filter(user=user)
@@ -1085,6 +1065,7 @@ def send_invoice_email(order):
     email.send()
 
 
+@login_required(login_url="/")
 def order_confirmation(request):
     latest_order = Order.objects.latest("created_at")
     orderitems = OrderItem.objects.filter(order=latest_order)
@@ -1101,7 +1082,7 @@ def order_confirmation(request):
     )
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def orders_view(request):
     orders = Order.objects.filter(user=request.user).order_by("-created_at")
     order_ids = [str(order.id) for order in orders]
@@ -1247,6 +1228,7 @@ def add_wishlist(request, pv_id):
         return redirect("shop")
 
 
+@login_required(login_url="/")
 def wishlist(request):
     user = request.user
     wishlist = Wishlist.objects.filter(user=user).order_by("-date")
@@ -1343,7 +1325,7 @@ def blog_page(request, blog_id):
     )
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/")
 def contact_us(request):
     if request.method == "POST":
         form = ContactUsForm(request.POST)
