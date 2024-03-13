@@ -85,16 +85,16 @@ WSGI_APPLICATION = "alaiaecom.wsgi.application"
 #         "PORT": "5432",
 #     }
 # }
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "myproject",
-        "USER": "myprojectuser",
-        "PASSWORD": "Hello@123",
-        "HOST": "localhost",
-        "PORT": "",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "myproject",
+#         "USER": "myprojectuser",
+#         "PASSWORD": "Hello@123",
+#         "HOST": "localhost",
+#         "PORT": "",
+#     }
+# }
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",
@@ -105,7 +105,16 @@ DATABASES = {
 #         "PORT": "5432",
 #     }
 # }
-
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "alaiadb",
+        "USER": "mysuperuser",
+        "PASSWORD": "Hello123",
+        "HOST": "alaiadb.ctakoey42k0u.eu-north-1.rds.amazonaws.com",
+        "PORT": "5432",
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
