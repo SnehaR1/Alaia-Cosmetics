@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-8ve+5kp(+%!tejwfjbul1tl09tieht9zu#p8dkk19-hi!i@2q5"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -75,36 +75,17 @@ WSGI_APPLICATION = "alaiaecom.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "alaiadb",
-#         "USER": "alaia",
-#         "PASSWORD": "Hello@123",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "myproject",
-        "USER": "myprojectuser",
-        "PASSWORD": "Hello@123",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": "localhost",
         "PORT": "",
     }
 }
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "alaiadb",
-#         "USER": "alaia",
-#         "PASSWORD": "Rambootan99",
-#         "HOST": "alaiadb.c980au0864ra.eu-north-1.rds.amazonaws.com",
-#         "PORT": "",
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -161,27 +142,16 @@ AUTH_USER_MODEL = "userauth.CustomUser"
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "sneharavindranathan@gmail.com"
-EMAIL_HOST_PASSWORD = "mwde hvoy orul fozv"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 1209600
 
 
-RAZORPAY_API_KEY = "rzp_test_YnJ9v2rxFkA28x"
-RAZORPAY_API_SECRET = "1NJjlqDWoBUci4hN8V8lCOiJ"
+RAZORPAY_API_KEY = os.getenv("RAZORPAY_API_KEY")
+RAZORPAY_API_SECRET = os.getenv("RAZORPAY_API_SECRET")
 RAZORPAY_CLIENT = razorpay.Client(auth=(RAZORPAY_API_KEY, RAZORPAY_API_SECRET))
-
-
-# AWS_ACCESS_KEY_ID = "AKIAYRSIA52UXECCW6EC"
-# AWS_SECRET_ACCESS_KEY = "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"
-# AWS_STORAGE_BUCKET_NAME = "alaiabucket"
-# AWS_S3_SIGNATURE_NAME = ("s3v4",)
-# AWS_S3_REGION_NAME = "eu-north-1"
-# AWS_S3_FILE_OVERWRITE = False
-# AWS_DEFAULT_ACL = None
-# AWS_S3_VERITY = True
-# DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
